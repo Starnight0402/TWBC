@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brew League Score Sheet</title>
+  <meta name="description" content="Audit checklist for training at Third Wave Coffee." />
+  <meta name="theme-color" content="#f8fafc" />
+  <link rel="icon" href="/favicon.ico" />
+  <meta property="og:title" content="Brew League Score Sheet" />
+  <meta property="og:description" content="Audit checklist for training at Third Wave Coffee." />
+  <meta property="og:type" content="website" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+  <style>
+    .fade-in { opacity: 0; animation: fadeIn 0.6s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    .report-box {
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 2px solid #e0e7ef;
+      box-shadow: 0 2px 8px #e0e7ef77;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
+      padding: 8px 0 8px 0;
+      color: #293241;
+    }
+    .autotable-header {
+      color: #23272f !important;
+      background: #e3e8f2 !important;
+      font-weight: bold !important;
+      font-size: 11px !important;
+      text-align: center !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    // Robust URL parameter extraction
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      const val = params.get(name);
+      return val ? decodeURIComponent(val.replace(/\+/g, ' ')) : '';
+    }
+    const judgeName = getParam('judgeName') || getParam('name') || '';
+    const judgeId   = getParam('judgeId') || getParam('id') || '';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwWDRWp8MxWidcQulsdcrtIOB6YLMQj5r2HpWszWgnigiVMlYWlkvOubjfAYeUxFvriYg/exec';
+    const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
+    const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
+    // Checklist Data & Scoring (UPDATED)
+    const SECTIONS = [
+      {
+        id: 'GroomingHygiene',
+        title: 'Grooming & Hygiene',
+        items: [
+          { id: 'SanitizedHands', q: 'Has the barista sanitized their hands', w: 1 },
+          { id: 'ApronClean', q: 'Is the barista apron free from stains and damage', w: 1 },
+          { id: 'NameTag', q: 'Is the barista wearing a name tag', w: 1 },
+          { id: 'FormalPants', q: 'Is the barista wearing black formal pants', w: 1 },
+          { id: 'BlackShoes', q: 'Is the barista wearing black shoes', w: 1 },
+          { id: 'GroomingStandards', q: 'Barista following the grooming standards (Beard/Hair/Make-up) Male and female', w: 2 },
+          { id: 'NailsTrimmed', q: 'Is the baristas nails trimmed', w: 1 },
+          { id: 'JewelryPermitted', q: 'Only permitted jewelry worn', w: 1 }
+        ]
+      },
+      {
+        id: 'EspressoDialIn',
+        title: 'Espresso (Dial-In)',
+        items: [
+          { id: 'Shot0', q: 'Shot extracted to check the recipe', w: 0 },
+          { id: 'DialInStartTime', q: 'Dial-In Start time:', w: 0 },
+          { id: 'Shot1', q: 'Is the barista able to change the grind size based on under/over extracted shot', w: 5 },
+          { id: 'ExplainDialIn', q: 'Is the barista able to explain the dial-in process', w: 3 },
+          { id: 'WasteDose', q: 'Did the barista waste a dose after changing the grind size every time', w: 3 },
+          { id: 'CheckWeight', q: 'Did the barista check the weight of the ground coffee after changing the grind size', w: 2 },
+          { id: 'GrindingTime', q: 'Is the barista able to set the grinding time to dispense the right amount for dose', w: 2 },
+          { id: 'GrinderCleaned', q: 'Area around the grinder cleaned with brush to clear out grounds', w: 2 },
+          { id: 'PortaFilterDry', q: 'Porta filter wiped with dry grey cloth', w: 2 },
+          { id: 'BasketFreeGrounds', q: 'Porta filter basket free from brewed coffee gounds', w: 2 },
+          { id: 'RightBasket', q: 'Right basket porta filter used for intended shot', w: 2 },
+          { id: 'RightGrammage', q: 'Right grammage of ground coffee taken', w: 2 },
+          { id: 'CoffeeLevelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
+          { id: 'TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
+          { id: 'PortaFilterRim', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
+          { id: 'FlushGrouphead', q: 'Barista Flushes the grouphead before insert', w: 3 },
+          { id: 'DripTrayWiped', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
+          { id: 'PortaFilterSmooth', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
+          { id: 'ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
+          { id: 'FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
+          { id: 'ShotBrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
+          { id: 'ShotYield', q: 'Was the shot extracted within the yield (+/- 1 g)', w: 5 },
+          { id: 'DialInEndTime', q: 'Dial-In End time:', w: 0 }
+        ]
+      },
+      {
+        id: 'MilkBasedBeverages',
+        title: 'Milk Based Beverages',
+        items: [
+          { id: 'BeverageName', q: 'Mention the name of the beverage that is asked to be prepared.', w: 0 },
+          { id: 'StartTime', q: 'Start time:', w: 0 },
+          { id: 'Cup1PreWarmed', q: 'Is the cup pre-warmed before extraction', w: 2 },
+          { id: 'Cup1DryCloth', q: 'Porta filter wiped with dry grey cloth', w: 2 },
+          { id: 'Cup1BasketFree', q: 'Porta filter basket free from brewed coffee gounds', w: 2 },
+          { id: 'Cup1RightBasket', q: 'Right basket porta filter used for intended shot', w: 2 },
+          { id: 'Cup1Grammage', q: 'Right grammage of ground coffee taken', w: 2 },
+          { id: 'Cup1Levelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
+          { id: 'Cup1TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
+          { id: 'Cup1RimWiped', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
+          { id: 'Cup1FlushGrouphead', q: 'Barista Flushes the grouphead before insert', w: 3 },
+          { id: 'Cup1DripTray', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
+          { id: 'Cup1SmoothInsert', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
+          { id: 'Cup1ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
+          { id: 'Cup1FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
+          { id: 'Cup1BrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
+          { id: 'Cup1Yield', q: 'Was the shot extracted within the yield (+/- 1 g)', w: 5 },
+          { id: 'SteamingExplain', q: 'Is the barista able to explain the milk steaming process', w: 2 },
+          { id: 'SteamingPurged', q: 'Steaming wand is purged before use', w: 3 },
+          { id: 'CleanPitcher', q: 'Is the Barista uses a clean milk pitcher for every order', w: 2 },
+          { id: 'RightPitcher', q: 'Is the barista using the right milk pitcher for the intended beverage size', w: 3 },
+          { id: 'ColdMilk', q: 'In the barista using cold milk stored in the chiller', w: 3 },
+          { id: 'MilkPouch', q: 'Is the milk pouch stored in the 900ml pitcher', w: 1 },
+          { id: 'RightMilkAmount', q: 'Is the barista taking the right amount of milk for the intended beverage size', w: 3 },
+          { id: 'FoamConsistency', q: 'Is the barista able to create the right consistency of foam for a latte/ Cappuccino/Flat white', w: 3 },
+          { id: 'SteamingWiped', q: 'Steaming wand is wiped & purged after use', w: 3 },
+          { id: 'GreenClothSteam', q: 'Did the barista use the right green cloth to wipe the steam wand', w: 3 },
+          { id: 'GreenClothStored', q: 'Did the barista store the green cloth in the GN pan after use', w: 2 },
+          { id: 'TapPitcher', q: 'Does the barista tap the pitcher to remove excess bubbles (if any)', w: 1 },
+          { id: 'SwirlPitcher', q: 'Did the barista swirl the pitcher to ensure the milk and foam is well mixed', w: 1 },
+          { id: 'LatteArt', q: 'Barista able to create latte art in the cup (Cappuccino- Heart , Latte- Tulip/ Rosetta , Flat white - Single dot )', w: 5 },
+          { id: 'LatteArtCenter', q: 'Is the latte art in the centre of the cup', w: 3 },
+          { id: 'ContrastCrema', q: 'is there a visible contrast between the crema and the latte art', w: 3 },
+          { id: 'LatteArtFacing', q: 'Is the latte art facing the customer with the handle on the right side', w: 3 },
+          { id: 'IdenticalArt', q: 'Did the 2 beverages presented have identical latte art', w: 5 },
+          { id: 'NoSpillage', q: 'No spillage of espresso or milk on the outer part of the cup', w: 2 },
+          { id: 'MilkWastage', q: 'Milk wastage less than 50ml', w: 3 },
+          { id: 'CleanPitcherAfter', q: 'Did the barista clean the milk pitcher after use', w: 1 },
+          { id: 'EndTime', q: 'End time:', w: 0 },
+          { id: 'CupImage', q: 'Cup 1 & 2 - Image', w: 0 },
+          { id: 'FoamAmount', q: 'Did the 2 beverages presented have the right amount of foam as per the beverage created', w: 5 },
+          { id: 'SmileInteraction', q: 'Did the barista smile and have an engaging interaction with the judge', w: 3 },
+          { id: 'CounterClean', q: 'Did the barista leave the counter clean after finishing his/her performance', w: 5 }
+        ]
+      }
+    ];
+    const optionColors = { yes:'green', no:'red', na:'yellow' };
+    const options = Object.entries(optionColors);
+    const colorMap = {
+      yes: {
+        selected: "bg-green-200 ring-2 ring-green-500 hover:bg-green-300",
+        base: "bg-green-100 hover:bg-green-300"
+      },
+      no: {
+        selected: "bg-red-200 ring-2 ring-red-500 hover:bg-red-300",
+        base: "bg-red-100 hover:bg-red-300"
+      },
+      na: {
+        selected: "bg-yellow-200 ring-2 ring-yellow-500 hover:bg-yellow-300",
+        base: "bg-yellow-100 hover:bg-yellow-300"
+      }
+    };
+    function App(){
+      const [resp,setResp]=useState(()=>JSON.parse(safeLS.get('resp')||'{}'));
+      const [participantName, setParticipantName] = useState(safeLS.get('participantName') || '');
+      const [participantEmpID, setParticipantEmpID] = useState(safeLS.get('participantEmpID') || '');
+      const [storeName, setStoreName] = useState(safeLS.get('storeName') || '');
+      const [storeID, setStoreID] = useState(safeLS.get('storeID') || '');
+      const [coffeeMachineName, setCoffeeMachineName] = useState(safeLS.get('coffeeMachineName') || '');
+      const [imgs,setImgs]=useState(()=>JSON.parse(safeLS.get('imgs')||'{}'));
+      const [remarks, setRemarks] = useState(() => JSON.parse(safeLS.get('remarks') || '{}')); // REMARKS
+      const [downloading,setDownloading]=useState(false);
+      const [downloaded, setDownloaded] = useState(false);
+      const [showPopup, setShowPopup] = useState(false);
+      useEffect(()=>{
+        safeLS.set('resp',JSON.stringify(resp));
+        safeLS.set('participantName',participantName);
+        safeLS.set('participantEmpID',participantEmpID);
+        safeLS.set('storeName',storeName);
+        safeLS.set('storeID',storeID);
+        safeLS.set('coffeeMachineName',coffeeMachineName);
+        safeLS.set('imgs',JSON.stringify(imgs));
+        safeLS.set('remarks', JSON.stringify(remarks)); // REMARKS
+      },[resp,participantName,participantEmpID,storeName,storeID,coffeeMachineName,imgs,remarks]); // REMARKS
+      const handleOption=(sec,it,val)=>{
+        const key=`${sec.id}_${it.id}`;
+        setResp(p=>({...p,[key]:val}));
+        if(navigator?.vibrate){
+          if(val==='yes')safeVibrate(50);
+          else if(val==='no')safeVibrate([50,50]);
+        }
+      };
+      const handleTSA=(sec,it,val)=>{
+        const key=`${sec.id}_${it.id}`;
+        setResp(p=>({...p,[key]:val}));
+        if(navigator?.vibrate) safeVibrate(50);
+      };
+      const addImages=(sec,e)=>{
+        Array.from(e.target.files).forEach(f=>{
+          EXIF.getData(f,function(){
+            const r=new FileReader();
+            r.onload=ev=>setImgs(p=>({...p,[sec.id]:[...(p[sec.id]||[]),ev.target.result]}));
+            r.readAsDataURL(f);
+          });
+        });
+        e.target.value=null;
+      };
+      const handleCaptureTime = (sec, it) => {
+        const key = `${sec.id}_${it.id}`;
+        const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        setResp((prev) => ({ ...prev, [key]: currentTime }));
+      };
+      // Check completion
+      const allDone = participantName.trim() && participantEmpID.trim() && storeName.trim() && storeID.trim() && coffeeMachineName.trim() &&
+        SECTIONS.every(sec=>sec.items.every(it=>resp[`${sec.id}_${it.id}`]!=null));
+      // SUBMIT & PDF
+      const handleSubmit=async e=>{
+        e.preventDefault();
+        if(!allDone){safeVibrate([200,200]);return;}
+        setDownloading(true);
+        // Score calculation
+        let total=0, max=0, sectionScores={}, sectionMax={};
+        SECTIONS.forEach(sec=>{
+          let secTotal=0, secMax=0;
+          sec.items.forEach(it=>{
+            const key=`${sec.id}_${it.id}`,r=resp[key];
+            if(sec.id==='TSA'){const v=parseInt(r)||0; secTotal+=v; secMax+=it.w;}
+            else{
+              if(r==='yes')secTotal+=it.w;
+              else if(r==='no' && it.wneg)secTotal+=it.wneg;
+              if(r!=='na')secMax+=Math.abs(it.w);
+            }
+          });
+          sectionScores[sec.id]=secTotal;
+          sectionMax[sec.id]=secMax;
+          total+=secTotal;max+=secMax;
+        });
+        const pct = max?Math.round((total/max)*100):0;
+        const completion=new Date().toLocaleString('en-GB',{hour12:false});
+        // PDF Generation
+        const {jsPDF}=window.jspdf;
+        const doc=new jsPDF({orientation:'portrait',unit:'mm'});
+        // HEADER
+        doc.setFontSize(20);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor("#263140");
+        doc.text("Brew League Score Sheet", 105, 15, { align: "center" });
+        // Participant and Judge Details
+        doc.setFontSize(12);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor("#24272e");
+        doc.text(`Participant Name: ${participantName}`, 10, 25);
+        doc.text(`Judge Name: ${judgeName}`, 10, 30);
+        doc.text(`Judge ID: ${judgeId}`, 10, 35);
+        doc.text(`Date/Time: ${completion}`, 10, 40);
+        doc.text(`Score: ${total} / ${max} (${pct}%)`, 10, 45);
+        doc.text(`Machine Name: ${coffeeMachineName}`, 10, 50);
+        doc.text(`Store Name: ${storeName}`, 10, 55);
+        doc.text(`Store ID: ${storeID}`, 10, 60);
+        // Section Details
+        let y = 70;
+        const sectionBg = [
+          "#E3F6FC",
+          "#FEF6E4",
+          "#E4F7EE",
+          "#FFF1F6",
+          "#F1F2FB",
+          "#FFF5DA",
+          "#F8F9F9",
+          "#F5F6F6",
+        ];
+        for (let s = 0; s < SECTIONS.length; s++) {
+          const sec = SECTIONS[s];
+          const bg = sectionBg[s % sectionBg.length];
+          // Section title in box
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setFillColor(bg);
+          doc.roundedRect(13, y, 184, 12, 9, 9, "F");
+          doc.setFontSize(12);
+          doc.setTextColor("#23272f");
+          doc.text(
+            `${sec.title}  (Score: ${sectionScores[sec.id]} / ${sectionMax[sec.id]})`,
+            105,
+            y + 8,
+            { align: "center" }
+          );
+          // Table below title, inside box
+          doc.autoTable({
+            startY: y + 12,
+            head: [["Question", "Response", "Score"]],
+            body: sec.items.map((it) => {
+              const key = `${sec.id}_${it.id}`;
+              const r = resp[key];
+              let respText =
+                sec.id === "TSA"
+                  ? r
+                  : r === "yes"
+                  ? "Yes"
+                  : r === "no"
+                  ? "No"
+                  : r === "na"
+                  ? "NA"
+                  : r;
+              let score =
+                sec.id === "TSA"
+                  ? parseInt(r) || 0
+                  : r === "yes"
+                  ? it.w
+                  : r === "no" && it.wneg
+                  ? it.wneg
+                  : 0;
+              return [it.q, respText, score];
+            }),
+            margin: { left: 18, right: 18 },
+            styles: { fontSize: 9, cellPadding: 2, textColor: "#23272f" },
+            headStyles: {
+              fillColor: "#dbeafe",
+              textColor: "#23272f",
+              fontStyle: "bold",
+            },
+            tableLineColor: "#c3dafe",
+            tableLineWidth: 0.7,
+            theme: "grid",
+            showHead: "everyPage",
+          });
+          let nextY = doc.lastAutoTable.finalY + 4;
+          // REMARKS: Insert remarks below table, above images
+          if (remarks[sec.id] && remarks[sec.id].trim()) {
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(10);
+            doc.setTextColor("#444");
+            let splitRemarks = doc.splitTextToSize(
+              "Remarks: " + remarks[sec.id],
+              170
+            );
+            doc.text(splitRemarks, 18, nextY);
+            nextY += splitRemarks.length * 6 + 2;
+          }
+          // IMAGES (below remarks, still in section box)
+          if (imgs[sec.id] && imgs[sec.id].length) {
+            let imgPerRow = 6;
+            let imgW = 24,
+              imgH = 24,
+              gap = 6;
+            let baseX = 18,
+              baseY = nextY;
+            imgs[sec.id].forEach((src, i) => {
+              let row = Math.floor(i / imgPerRow);
+              let col = i % imgPerRow;
+              let x = baseX + col * (imgW + gap);
+              let y = baseY + row * (imgH + gap);
+              if (y > 265) {
+                doc.addPage();
+                baseY = 20;
+                y = baseY;
+              }
+              doc.addImage(src, "JPEG", x, y, imgW, imgH);
+            });
+          }
+          y = nextY + 8;
+          if (y > 200 && s !== SECTIONS.length - 1) {
+            doc.addPage();
+            y = 20;
+          }
+        }
+        doc.save(`audit_${participantName}_${Date.now()}.pdf`);
+        setDownloading(false);
+        setDownloaded(true);
+        setShowPopup(true);
+        setTimeout(() => {
+          setDownloaded(false);
+          setShowPopup(false);
+        }, 3000);
+      };
+      const resetAll=()=>{
+        safeLS.clear();
+        setResp({});
+        setParticipantName('');
+        setParticipantEmpID('');
+        setStoreName('');
+        setStoreID('');
+        setCoffeeMachineName('');
+        setImgs({});
+        setRemarks({}); // REMARKS
+        safeVibrate([200,200]);
+      };
+      // UI
+      return(
+        <>
+          {showPopup && (
+            <div style={{position:'fixed',top:'30%',left:'50%',transform:'translate(-50%,-50%)',zIndex:9999}} className="px-6 py-4 bg-green-600 text-white rounded-lg shadow-lg text-center fade-in">
+              Report downloaded!
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-6 p-3 pt-4 max-w-2xl mx-auto">
+            <h1 className="text-xl sm:text-2xl font-bold text-center mb-2">Brew League Score Sheet</h1>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
+              <div>
+                <label className="block text-xs font-semibold">Judge Name</label>
+                <input id="judgeName" readOnly value={judgeName} className="w-full p-2 border rounded bg-gray-100"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Judge ID</label>
+                <input id="judgeId" readOnly value={judgeId} className="w-full p-2 border rounded bg-gray-100"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Participant Name</label>
+                <input id="participantName" value={participantName} onChange={e=>{setParticipantName(e.target.value);safeLS.set('participantName',e.target.value);}} required className="w-full p-2 border rounded"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Participant Emp. ID</label>
+                <input id="participantEmpID" value={participantEmpID} onChange={e=>{setParticipantEmpID(e.target.value);safeLS.set('participantEmpID',e.target.value);}} required className="w-full p-2 border rounded"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Store Name</label>
+                <input id="storeName" value={storeName} onChange={e=>{setStoreName(e.target.value);safeLS.set('storeName',e.target.value);}} required className="w-full p-2 border rounded"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Store ID</label>
+                <input id="storeID" value={storeID} onChange={e=>{setStoreID(e.target.value);safeLS.set('storeID',e.target.value);}} required className="w-full p-2 border rounded"/>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold">Name of Coffee Machine</label>
+                <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className="w-full p-2 border rounded"/>
+              </div>
+            </div>
+            {SECTIONS.map(sec=>(
+              <div key={sec.id} id={`${sec.id}-section`} className="mb-4 report-box p-2 fade-in">
+                <h2 className="section-title">{sec.title}</h2>
+                <table className="w-full border-collapse mt-1 mb-2">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-2 py-1 text-left text-xs font-bold">Question</th>
+                      {options.map(([opt])=><th key={opt} className="border px-2 py-1 text-center text-xs uppercase">{opt}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sec.items.map((it) => {
+                      const key = `${sec.id}_${it.id}`;
+                      const isTimeField = ['DialInStartTime', 'DialInEndTime', 'StartTime', 'EndTime'].includes(it.id);
+                      return (
+                        <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                          <td className="border px-2 py-1">{it.q}</td>
+                          {isTimeField ? (
+                            <td colSpan={options.length} className="border px-2 py-1 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleCaptureTime(sec, it)}
+                                className="bg-blue-100 px-4 py-1 rounded-full hover:bg-blue-200 transition"
+                              >
+                                Capture
+                              </button>
+                              {resp[key] && <span className="ml-2 text-sm text-gray-600">{resp[key]}</span>}
+                            </td>
+                          ) : (
+                            options.map(([opt]) => {
+                              const sel = resp[key] === opt;
+                              return (
+                                <td key={opt} className="border px-2 py-1 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOption(sec, it, opt)}
+                                    className={
+                                      sel
+                                        ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
+                                        : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
+                                    }
+                                  >
+                                    {opt.toUpperCase()}
+                                  </button>
+                                </td>
+                              );
+                            })
+                          )}
+                        </tr>
+                      );                    })}
+                  </tbody>
+                </table>
+                <div className="mt-2 fade-in">
+                  <label className="block text-xs font-semibold">Section Remarks</label>
+                  <textarea                    value={remarks[sec.id] || ''}                    onChange={e => setRemarks(r => ({ ...r, [sec.id]: e.target.value }))}                    className="w-full p-2 border rounded mt-1"                    placeholder="Enter remarks for this section (optional)"                    rows={2}                  />                </div>
+                <div className="mt-2 fade-in">
+                  <label className="block text-xs font-semibold">Upload Images</label>
+                  <input type="file" accept="image/*" capture="environment" multiple onChange={e=>addImages(sec,e)} className="mt-1"/>
+                  <div className="flex space-x-2 mt-2 overflow-x-auto">
+                    {(imgs[sec.id]||[]).map((s,i)=><img key={i} src={s} className="w-16 h-16 object-cover rounded-md border"/>) }
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="flex space-x-4 fade-in">
+              <button type="button" onClick={resetAll} className="flex-1 bg-blue-100 py-3 rounded-full hover:bg-blue-200 transition">New Response</button>
+              <button type="submit" className={`flex-1 bg-green-100 py-3 rounded-full hover:bg-green-200 transition ${downloading?'opacity-70 pointer-events-none':''}`}>
+                {downloading? 'Generating Report...':'Submit & Download PDF'}
+              </button>
+            </div>
+          </form>
+        </>
+      );
+    }
+  </script>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+  <script type="text/babel">
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
