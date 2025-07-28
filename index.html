@@ -355,14 +355,22 @@
         if (!storeName.trim()) missing.push({ type: 'field', id: 'storeName', label: 'Store Name' });
         if (!storeID.trim()) missing.push({ type: 'field', id: 'storeID', label: 'Store ID' });
         if (!coffeeMachineName.trim()) missing.push({ type: 'field', id: 'coffeeMachineName', label: 'Name of Coffee Machine' });
+        // Make at least one Grooming & Hygiene image mandatory
+        if (!(imgs['GroomingHygiene'] && imgs['GroomingHygiene'].length > 0)) {
+          missing.push({ type: 'img', secId: 'GroomingHygiene', itId: 'GroomingHygieneImage', secTitle: 'Grooming & Hygiene', question: 'At least one Grooming & Hygiene image required' });
+        }
+        // Make at least one Cup image mandatory
+        if (!(imgs['EndTime'] && imgs['EndTime'].length > 0)) {
+          missing.push({ type: 'img', secId: 'EndTime', itId: 'CupImage', secTitle: 'Overall', question: 'At least one Cup image required' });
+        }
         SECTIONS.forEach(sec => {
           sec.items.forEach(it => {
             const key = `${sec.id}_${it.id}`;
-            if (sec.id === 'EndTime' && it.id === 'CupImage') {
-              if (!(imgs[sec.id] && imgs[sec.id].length > 0)) {
-                missing.push({ type: 'img', secId: sec.id, itId: it.id, secTitle: sec.title, question: it.q });
-              }
-            } else if (resp[key] == null) {
+            // Skip image checks here, handled above
+            if ((sec.id === 'EndTime' && it.id === 'CupImage') || (sec.id === 'GroomingHygiene' && it.id === 'GroomingHygieneImage')) {
+              return;
+            }
+            if (resp[key] == null) {
               missing.push({ type: 'resp', secId: sec.id, itId: it.id, secTitle: sec.title, question: it.q });
             }
           });
@@ -440,46 +448,6 @@
         }
         const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
-
-        // --- LOGGING TO GOOGLE SHEETS (NO IMAGES) ---
-        const data = new URLSearchParams({
-          date: completion,
-          judgeName,
-          judgeId,
-          participantName,
-          participantEmpID,
-          coffeeMachineName,
-          score: total,
-          percentage: pct
-        });
-        const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycby_ig6jzz7Ub-EeTvouGSIyJAW58YMWe4A8pTwjL1fEqbj7EJRQ8wEvQc9eBOyfXdk7/exec"; // Define LOG_ENDPOINT if not already
-        const MAX_RETRIES = 3; // Define maximum number of retries
-        let retries = 0;
-        let loggingSuccessful = false;
-
-        while (retries < MAX_RETRIES && !loggingSuccessful) {
-          try {
-            const response = await fetch(LOG_ENDPOINT, { method: "POST", body: data });
-            if (response.ok) { // Check if the response status is in the 200-299 range
-              loggingSuccessful = true;
-              console.log("Logging to Google Sheets successful.");
-            } else {
-              console.error(`Logging attempt failed with status: ${response.status}`);
-              retries++;
-              await new Promise(resolve => setTimeout(resolve, 1000 * retries)); // Wait before retrying
-            }
-          } catch (error) {
-            console.error("Logging attempt failed:", error);
-            retries++;
-            await new Promise(resolve => setTimeout(resolve, 1000 * retries)); // Wait before retrying
-          }
-        }
-
-        if (!loggingSuccessful) {
-          console.error("Logging to Google Sheets failed after multiple retries.");
-          // Optionally, provide user feedback here, e.g., show a message
-        }
-
 
         safeVibrate(100);
         // PDF Generation
@@ -841,14 +809,15 @@ y += 8;
                     rows={2}
                   />
                 </div>
-                {/* Only show image upload for Grooming & Hygiene section */}
+                {/* Only show image upload for Grooming & Hygiene section, and show error if missing */}
                 {sec.id === 'GroomingHygiene' && (
                   <div className="mt-2 fade-in">
                     <label className="block text-xs font-semibold">Upload Images</label>
-                    <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1" />
+                    <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 ${incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene')?'border-red-400 ring-2 ring-red-200':''}`} />
                     <div className="flex space-x-2 mt-2 overflow-x-auto">
                       {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />)}
                     </div>
+                    {incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene') && <div className="text-xs text-red-600 mt-1">At least one Grooming & Hygiene image is required</div>}
                   </div>
                 )}
               </div>
