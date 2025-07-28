@@ -55,7 +55,7 @@
     }
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw5YyUhH0s6sztCszUdGea7q5E8TSaoEwpN-0gWk7h3GJ61wNhKAvrgLh1C0n2wOxQ4/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycby_ig6jzz7Ub-EeTvouGSIyJAW58YMWe4A8pTwjL1fEqbj7EJRQ8wEvQc9eBOyfXdk7/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -346,19 +346,50 @@
         const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
         setResp((prev) => ({ ...prev, [key]: currentTime }));
       };
-      // Check completion
-      const allDone = participantName.trim() && participantEmpID.trim() && storeName.trim() && storeID.trim() && coffeeMachineName.trim() &&
-        SECTIONS.every(sec => sec.items.every(it => {
-          // For CupImage, require at least one image uploaded
-          if (sec.id === 'EndTime' && it.id === 'CupImage') {
-            return imgs[sec.id] && imgs[sec.id].length > 0;
-          }
-          return resp[`${sec.id}_${it.id}`] != null;
-        }));
+      // Track incomplete fields for UI feedback
+      const [incompleteFields, setIncompleteFields] = useState([]);
+      const checkCompletion = () => {
+        let missing = [];
+        if (!participantName.trim()) missing.push({ type: 'field', id: 'participantName', label: 'Participant Name' });
+        if (!participantEmpID.trim()) missing.push({ type: 'field', id: 'participantEmpID', label: 'Participant Emp. ID' });
+        if (!storeName.trim()) missing.push({ type: 'field', id: 'storeName', label: 'Store Name' });
+        if (!storeID.trim()) missing.push({ type: 'field', id: 'storeID', label: 'Store ID' });
+        if (!coffeeMachineName.trim()) missing.push({ type: 'field', id: 'coffeeMachineName', label: 'Name of Coffee Machine' });
+        SECTIONS.forEach(sec => {
+          sec.items.forEach(it => {
+            const key = `${sec.id}_${it.id}`;
+            if (sec.id === 'EndTime' && it.id === 'CupImage') {
+              if (!(imgs[sec.id] && imgs[sec.id].length > 0)) {
+                missing.push({ type: 'img', secId: sec.id, itId: it.id, secTitle: sec.title, question: it.q });
+              }
+            } else if (resp[key] == null) {
+              missing.push({ type: 'resp', secId: sec.id, itId: it.id, secTitle: sec.title, question: it.q });
+            }
+          });
+        });
+        return missing;
+      };
+      const allDone = checkCompletion().length === 0;
       // SUBMIT & PDF
       const handleSubmit=async e=>{
         e.preventDefault();
-        if(!allDone){safeVibrate([200,200]);return;}
+        const missing = checkCompletion();
+        setIncompleteFields(missing);
+        if(missing.length > 0){
+          safeVibrate([200,200]);
+          // Optionally scroll to first missing field
+          if (missing[0]) {
+            let el = null;
+            if (missing[0].type === 'field') {
+              el = document.getElementById(missing[0].id);
+            } else if (missing[0].type === 'resp' || missing[0].type === 'img') {
+              el = document.getElementById(`${missing[0].secId}-section`);
+            }
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+        setIncompleteFields([]);
         setDownloading(true);
         // Score calculation
         let total=0, max=0, sectionScores={}, sectionMax={};
@@ -411,70 +442,22 @@
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
 
         // --- LOGGING TO GOOGLE SHEETS (NO IMAGES) ---
+        const data = new URLSearchParams({
+          date: completion,
+          judgeName,
+          judgeId,
+          participantName,
+          participantEmpID,
+          coffeeMachineName,
+          score: total,
+          percentage: pct
+        });
         try {
-          // Prepare log data: top fields and all questions with response and score (no images)
-          let logData = {
-            participantName,
-            participantEmpID,
-            storeName,
-            storeID,
-            coffeeMachineName,
-            judgeName,
-            judgeId,
-            completion,
-            dialInTimeTaken,
-            milkTimeTaken,
-            totalScore: total,
-            maxScore: max,
-            percent: pct,
-            sections: SECTIONS.map(sec => ({
-              id: sec.id,
-              title: sec.title,
-              score: sectionScores[sec.id],
-              max: sectionMax[sec.id],
-              items: sec.items.map(it => {
-                const key = `${sec.id}_${it.id}`;
-                const r = resp[key];
-                let respText =
-                  sec.id === "TSA"
-                    ? r
-                    : r === "yes"
-                    ? "Yes"
-                    : r === "no"
-                    ? "No"
-                    : r === "na"
-                    ? "NA"
-                    : r;
-                let score;
-                if (sec.id === "TSA") {
-                  score = parseInt(r) || 0;
-                } else if (r === "yes") {
-                  score = it.w;
-                } else if (r === "no" && it.wneg) {
-                  score = it.wneg;
-                } else if (r === "na") {
-                  score = "NA";
-                } else {
-                  score = 0;
-                }
-                return {
-                  id: it.id,
-                  question: it.q,
-                  response: respText,
-                  score
-                };
-              }),
-              remarks: remarks[sec.id] || ''
-            }))
-          };
-          await fetch(LOG_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(logData)
-          });
-        } catch (err) {
+          await fetch(LOG_ENDPOINT, { method: "POST", body: data });
+        } catch {
           // Logging failed, but continue
         }
+        safeVibrate(100);
         // PDF Generation
         const {jsPDF}=window.jspdf;
         const doc=new jsPDF({orientation:'portrait',unit:'mm'});
@@ -543,7 +526,7 @@ y += 8;
           // Table below title, inside box
           doc.autoTable({
             startY: y + 12,
-            head: [["Question", "Response", "Score"]],
+            head: [["Question", "Response", "Score (Weightage)"]],
             body: sec.items.map((it) => {
               const key = `${sec.id}_${it.id}`;
               const r = resp[key];
@@ -557,19 +540,26 @@ y += 8;
                   : r === "na"
                   ? "NA"
                   : r;
-              let score;
+              let score, maxScore;
               if (sec.id === "TSA") {
                 score = parseInt(r) || 0;
+                maxScore = it.w;
               } else if (r === "yes") {
                 score = it.w;
+                maxScore = it.w;
               } else if (r === "no" && it.wneg) {
                 score = it.wneg;
+                maxScore = it.w;
               } else if (r === "na") {
                 score = "NA";
+                maxScore = it.w;
               } else {
                 score = 0;
+                maxScore = it.w;
               }
-              return [it.q, respText, score];
+              // Show as score/maxScore, e.g. 1/1, 0/5, NA/3
+              let scoreDisplay = (score === "NA") ? `NA/${maxScore}` : `${score}/${maxScore}`;
+              return [it.q, respText, scoreDisplay];
             }),
             margin: { left: 18, right: 18 },
             styles: { fontSize: 9, cellPadding: 2, textColor: "#23272f" },
@@ -680,27 +670,32 @@ y += 8;
               </div>
               <div>
                 <label className="block text-xs font-semibold">Participant Name</label>
-                <input id="participantName" value={participantName} onChange={e=>{setParticipantName(e.target.value);safeLS.set('participantName',e.target.value);}} required className="w-full p-2 border rounded"/>
+                <input id="participantName" value={participantName} onChange={e=>{setParticipantName(e.target.value);safeLS.set('participantName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='participantName')?'border-red-500 ring-2 ring-red-300':''}`}/>
+                {incompleteFields.some(f=>f.id==='participantName') && <div className="text-xs text-red-600">Required</div>}
               </div>
               <div>
                 <label className="block text-xs font-semibold">Participant Emp. ID</label>
-                <input id="participantEmpID" value={participantEmpID} onChange={e=>{setParticipantEmpID(e.target.value);safeLS.set('participantEmpID',e.target.value);}} required className="w-full p-2 border rounded"/>
+                <input id="participantEmpID" value={participantEmpID} onChange={e=>{setParticipantEmpID(e.target.value);safeLS.set('participantEmpID',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='participantEmpID')?'border-red-500 ring-2 ring-red-300':''}`}/>
+                {incompleteFields.some(f=>f.id==='participantEmpID') && <div className="text-xs text-red-600">Required</div>}
               </div>
               <div>
                 <label className="block text-xs font-semibold">Store Name</label>
-                <input id="storeName" value={storeName} onChange={e=>{setStoreName(e.target.value);safeLS.set('storeName',e.target.value);}} required className="w-full p-2 border rounded"/>
+                <input id="storeName" value={storeName} onChange={e=>{setStoreName(e.target.value);safeLS.set('storeName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='storeName')?'border-red-500 ring-2 ring-red-300':''}`}/>
+                {incompleteFields.some(f=>f.id==='storeName') && <div className="text-xs text-red-600">Required</div>}
               </div>
               <div>
                 <label className="block text-xs font-semibold">Store ID</label>
-                <input id="storeID" value={storeID} onChange={e=>{setStoreID(e.target.value);safeLS.set('storeID',e.target.value);}} required className="w-full p-2 border rounded"/>
+                <input id="storeID" value={storeID} onChange={e=>{setStoreID(e.target.value);safeLS.set('storeID',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='storeID')?'border-red-500 ring-2 ring-red-300':''}`}/>
+                {incompleteFields.some(f=>f.id==='storeID') && <div className="text-xs text-red-600">Required</div>}
               </div>
               <div>
                 <label className="block text-xs font-semibold">Name of Coffee Machine</label>
-                <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className="w-full p-2 border rounded"/>
+                <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='coffeeMachineName')?'border-red-500 ring-2 ring-red-300':''}`}/>
+                {incompleteFields.some(f=>f.id==='coffeeMachineName') && <div className="text-xs text-red-600">Required</div>}
               </div>
             </div>
             {SECTIONS.map(sec => (
-              <div key={sec.id} id={`${sec.id}-section`} className="mb-4 report-box p-2 fade-in">
+              <div key={sec.id} id={`${sec.id}-section`} className={`mb-4 report-box p-2 fade-in ${incompleteFields.some(f=>f.secId===sec.id)?'border-red-400 ring-2 ring-red-200':''}`}>
                 <h2 className="section-title">{sec.title}</h2>
                 <table className="w-full border-collapse mt-1 mb-2 table-fixed">
                   <colgroup>
@@ -721,20 +716,22 @@ y += 8;
                     {sec.items.map((it) => {
                       const key = `${sec.id}_${it.id}`;
                       const isTimeField = ['DialInStartTime', 'DialInEndTime', 'StartTime', 'EndTime'].includes(it.id);
+                      const missing = incompleteFields.find(f => (f.secId === sec.id && f.itId === it.id));
                       // CupImage question in EndTime section: show image upload in place of Yes/No/NA
                       if (sec.id === 'EndTime' && it.id === 'CupImage') {
                         return (
-                          <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                          <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
                             <td className="border px-2 py-1 align-top">{it.q}</td>
                             <td colSpan={options.length} className="border px-2 py-1 text-left align-top">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
-                                <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1 w-full sm:w-auto" />
+                                <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 w-full sm:w-auto ${missing?'border-red-400 ring-2 ring-red-200':''}`} />
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {(imgs[sec.id] || []).map((s, i) => (
                                     <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />
                                   ))}
                                 </div>
                               </div>
+                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
                             </td>
                           </tr>
                         );
@@ -747,11 +744,11 @@ y += 8;
                           '2 flat whites'
                         ];
                         return (
-                          <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                          <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
                             <td className="border px-2 py-1">{it.q}</td>
                             <td colSpan={options.length} className="border px-2 py-1 text-left align-middle">
                               <select
-                                className="border rounded px-2 py-1 w-full min-w-[140px] max-w-full text-sm focus:ring-2 focus:ring-blue-300"
+                                className={`border rounded px-2 py-1 w-full min-w-[140px] max-w-full text-sm focus:ring-2 focus:ring-blue-300 ${missing?'border-red-400 ring-2 ring-red-200':''}`}
                                 value={resp[key] || ''}
                                 onChange={e => handleTSA(sec, it, e.target.value)}
                                 required
@@ -762,23 +759,25 @@ y += 8;
                                   <option key={opt} value={opt}>{opt}</option>
                                 ))}
                               </select>
+                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
                             </td>
                           </tr>
                         );
                       }
                       return (
-                        <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                        <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
                           <td className="border px-2 py-1">{it.q}</td>
                           {isTimeField ? (
                             <td colSpan={options.length} className="border px-2 py-1 text-center">
                               <button
                                 type="button"
                                 onClick={() => handleCaptureTime(sec, it)}
-                                className="bg-blue-100 px-4 py-1 rounded-full hover:bg-blue-200 transition"
+                                className={`bg-blue-100 px-4 py-1 rounded-full hover:bg-blue-200 transition ${missing?'border-red-400 ring-2 ring-red-200':''}`}
                               >
                                 Capture
                               </button>
                               {resp[key] && <span className="ml-2 text-sm text-gray-600">{resp[key]}</span>}
+                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
                             </td>
                           ) : (
                             options.map(([opt]) => {
@@ -791,13 +790,14 @@ y += 8;
                                       onClick={() => handleOption(sec, it, opt)}
                                       className={
                                         sel
-                                          ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
-                                          : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
+                                          ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition ${missing?'border-red-400 ring-2 ring-red-200':''}`
+                                          : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition ${missing?'border-red-400 ring-2 ring-red-200':''}`
                                       }
                                     >
                                       {opt.toUpperCase()}
                                     </button>
                                   </div>
+                                  {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
                                 </td>
                               );
                             })
