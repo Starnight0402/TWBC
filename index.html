@@ -20,19 +20,26 @@
   <style>
     .fade-in { opacity: 0; animation: fadeIn 0.6s forwards; }
     @keyframes fadeIn { to { opacity: 1; } }
+    /* Material You inspired pastel backgrounds and elevation */
     .report-box {
-      border-radius: 18px;
-      background: #f8fafc;
-      border: 2px solid #e0e7ef;
-      box-shadow: 0 2px 8px #e0e7ef77;
+      border-radius: 1.5rem;
+      background: #f5f7fa;
+      border: 2px solid #e3e8f2;
+      box-shadow: 0 4px 16px #e3e8f299;
+      transition: box-shadow 0.2s;
+    }
+    .report-box:focus-within, .report-box:hover {
+      box-shadow: 0 8px 24px #c7d2fe99;
+      border-color: #c7d2fe;
     }
     .section-title {
-      font-size: 1.1rem;
-      font-weight: bold;
+      font-size: 1.2rem;
+      font-weight: 700;
       text-align: center;
       margin: 0;
-      padding: 8px 0 8px 0;
-      color: #293241;
+      padding: 12px 0 10px 0;
+      color: #2563eb;
+      letter-spacing: 0.01em;
     }
     .autotable-header {
       color: #23272f !important;
@@ -649,47 +656,50 @@ y += 8;
               Report downloaded!
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6 p-3 pt-4 max-w-2xl mx-auto">
-            <h1 className="text-xl sm:text-2xl font-bold text-center mb-2">Brew League Score Sheet</h1>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
+          <form onSubmit={handleSubmit} className="space-y-8 p-4 pt-6 max-w-2xl mx-auto bg-white/80 rounded-2xl shadow-lg border border-blue-50">
+            <div className="relative mb-4">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-blue-900 tracking-tight">Brew League Score Sheet</h1>
+              <img src="logo.png" alt="Logo" style={{position:'absolute',top:0,right:0,height:'64px',width:'auto',objectFit:'contain'}} className="rounded-xl shadow-sm bg-white/80 p-1" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold">Judge Name</label>
-                <input id="judgeName" readOnly value={judgeName} className="w-full p-2 border rounded bg-gray-100"/>
+                <label className="block text-xs font-semibold text-blue-900">Judge Name</label>
+                <input id="judgeName" readOnly value={judgeName} className="w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300"/>
               </div>
               <div>
-                <label className="block text-xs font-semibold">Judge ID</label>
-                <input id="judgeId" readOnly value={judgeId} className="w-full p-2 border rounded bg-gray-100"/>
+                <label className="block text-xs font-semibold text-blue-900">Judge ID</label>
+                <input id="judgeId" readOnly value={judgeId} className="w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300"/>
               </div>
               <div>
-                <label className="block text-xs font-semibold">Participant Name</label>
-                <input id="participantName" value={participantName} onChange={e=>{setParticipantName(e.target.value);safeLS.set('participantName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='participantName')?'border-red-500 ring-2 ring-red-300':''}`}/>
-                {incompleteFields.some(f=>f.id==='participantName') && <div className="text-xs text-red-600">Required</div>}
+                <label className="block text-xs font-semibold text-blue-900">Participant Name</label>
+                <input id="participantName" value={participantName} onChange={e=>{setParticipantName(e.target.value);safeLS.set('participantName',e.target.value);}} required className={`w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.id==='participantName')?'ring-2 ring-red-300 bg-red-50':''}`}/>
+                {incompleteFields.some(f=>f.id==='participantName') && <div className="text-xs text-red-600 font-semibold mt-1">Required</div>}
               </div>
               <div>
-                <label className="block text-xs font-semibold">Participant Emp. ID</label>
-                <input id="participantEmpID" value={participantEmpID} onChange={e=>{setParticipantEmpID(e.target.value);safeLS.set('participantEmpID',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='participantEmpID')?'border-red-500 ring-2 ring-red-300':''}`}/>
-                {incompleteFields.some(f=>f.id==='participantEmpID') && <div className="text-xs text-red-600">Required</div>}
+                <label className="block text-xs font-semibold text-blue-900">Participant Emp. ID</label>
+                <input id="participantEmpID" value={participantEmpID} onChange={e=>{setParticipantEmpID(e.target.value);safeLS.set('participantEmpID',e.target.value);}} required className={`w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.id==='participantEmpID')?'ring-2 ring-red-300 bg-red-50':''}`}/>
+                {incompleteFields.some(f=>f.id==='participantEmpID') && <div className="text-xs text-red-600 font-semibold mt-1">Required</div>}
               </div>
               <div>
-                <label className="block text-xs font-semibold">Store Name</label>
-                <input id="storeName" value={storeName} onChange={e=>{setStoreName(e.target.value);safeLS.set('storeName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='storeName')?'border-red-500 ring-2 ring-red-300':''}`}/>
-                {incompleteFields.some(f=>f.id==='storeName') && <div className="text-xs text-red-600">Required</div>}
+                <label className="block text-xs font-semibold text-blue-900">Store Name</label>
+                <input id="storeName" value={storeName} onChange={e=>{setStoreName(e.target.value);safeLS.set('storeName',e.target.value);}} required className={`w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.id==='storeName')?'ring-2 ring-red-300 bg-red-50':''}`}/>
+                {incompleteFields.some(f=>f.id==='storeName') && <div className="text-xs text-red-600 font-semibold mt-1">Required</div>}
               </div>
               <div>
-                <label className="block text-xs font-semibold">Store ID</label>
-                <input id="storeID" value={storeID} onChange={e=>{setStoreID(e.target.value);safeLS.set('storeID',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='storeID')?'border-red-500 ring-2 ring-red-300':''}`}/>
-                {incompleteFields.some(f=>f.id==='storeID') && <div className="text-xs text-red-600">Required</div>}
+                <label className="block text-xs font-semibold text-blue-900">Store ID</label>
+                <input id="storeID" value={storeID} onChange={e=>{setStoreID(e.target.value);safeLS.set('storeID',e.target.value);}} required className={`w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.id==='storeID')?'ring-2 ring-red-300 bg-red-50':''}`}/>
+                {incompleteFields.some(f=>f.id==='storeID') && <div className="text-xs text-red-600 font-semibold mt-1">Required</div>}
               </div>
               <div>
-                <label className="block text-xs font-semibold">Name of Coffee Machine</label>
-                <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className={`w-full p-2 border rounded ${incompleteFields.some(f=>f.id==='coffeeMachineName')?'border-red-500 ring-2 ring-red-300':''}`}/>
-                {incompleteFields.some(f=>f.id==='coffeeMachineName') && <div className="text-xs text-red-600">Required</div>}
+                <label className="block text-xs font-semibold text-blue-900">Name of Coffee Machine</label>
+                <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className={`w-full p-3 border-0 rounded-xl bg-blue-50 text-blue-900 font-medium focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.id==='coffeeMachineName')?'ring-2 ring-red-300 bg-red-50':''}`}/>
+                {incompleteFields.some(f=>f.id==='coffeeMachineName') && <div className="text-xs text-red-600 font-semibold mt-1">Required</div>}
               </div>
             </div>
             {SECTIONS.map(sec => (
-              <div key={sec.id} id={`${sec.id}-section`} className={`mb-4 report-box p-2 fade-in ${incompleteFields.some(f=>f.secId===sec.id)?'border-red-400 ring-2 ring-red-200':''}`}>
-                <h2 className="section-title">{sec.title}</h2>
-                <table className="w-full border-collapse mt-1 mb-2 table-fixed">
+              <div key={sec.id} id={`${sec.id}-section`} className={`mb-8 report-box p-4 fade-in ${incompleteFields.some(f=>f.secId===sec.id)?'border-red-400 ring-2 ring-red-200':''}`} tabIndex={0}>
+                <h2 className="section-title drop-shadow-sm text-blue-700">{sec.title}</h2>
+                <table className="w-full border-separate border-spacing-y-1 mt-2 mb-3 table-fixed bg-white/80 rounded-xl overflow-hidden shadow-sm">
                   <colgroup>
                     <col style={{width:'60%'}} />
                     <col style={{width:'13%'}} />
@@ -697,10 +707,10 @@ y += 8;
                     <col style={{width:'15%'}} />
                   </colgroup>
                   <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border px-2 py-1 text-left text-xs font-bold w-[60%]">Question</th>
+                    <tr className="bg-blue-50/80">
+                      <th className="border-0 px-3 py-2 text-left text-xs font-bold w-[60%] text-blue-900">Question</th>
                       {options.map(([opt], idx) => (
-                        <th key={opt} className={`border px-2 py-1 text-center text-xs uppercase ${idx===0?'w-[13%]':idx===1?'w-[12%]':'w-[15%]'}`}>{opt}</th>
+                        <th key={opt} className={`border-0 px-3 py-2 text-center text-xs uppercase font-bold text-blue-900 ${idx===0?'w-[13%]':idx===1?'w-[12%]':'w-[15%]'}`}>{opt}</th>
                       ))}
                     </tr>
                   </thead>
@@ -712,18 +722,18 @@ y += 8;
                       // CupImage question in EndTime section: show image upload in place of Yes/No/NA
                       if (sec.id === 'EndTime' && it.id === 'CupImage') {
                         return (
-                          <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
-                            <td className="border px-2 py-1 align-top">{it.q}</td>
-                            <td colSpan={options.length} className="border px-2 py-1 text-left align-top">
+                          <tr id={key} key={it.id} className={`even:bg-blue-50/40 hover:bg-blue-100/40 ${missing?'bg-red-50':''}`}>
+                            <td className="border-0 px-3 py-2 align-top font-medium text-blue-900">{it.q}</td>
+                            <td colSpan={options.length} className="border-0 px-3 py-2 text-left align-top">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
-                                <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 w-full sm:w-auto ${missing?'border-red-400 ring-2 ring-red-200':''}`} />
+                                <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 w-full sm:w-auto rounded-xl bg-blue-50 focus:ring-2 focus:ring-blue-300 ${missing?'border-red-400 ring-2 ring-red-200 bg-red-50':''}`} />
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {(imgs[sec.id] || []).map((s, i) => (
-                                    <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />
+                                    <img key={i} src={s} className="w-16 h-16 object-cover rounded-xl border shadow-sm" />
                                   ))}
                                 </div>
                               </div>
-                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
+                              {missing && <div className="text-xs text-red-600 mt-1 font-semibold">Required</div>}
                             </td>
                           </tr>
                         );
@@ -736,11 +746,11 @@ y += 8;
                           '2 flat whites'
                         ];
                         return (
-                          <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
-                            <td className="border px-2 py-1">{it.q}</td>
-                            <td colSpan={options.length} className="border px-2 py-1 text-left align-middle">
+                          <tr id={key} key={it.id} className={`even:bg-blue-50/40 hover:bg-blue-100/40 ${missing?'bg-red-50':''}`}>
+                            <td className="border-0 px-3 py-2 font-medium text-blue-900">{it.q}</td>
+                            <td colSpan={options.length} className="border-0 px-3 py-2 text-left align-middle">
                               <select
-                                className={`border rounded px-2 py-1 w-full min-w-[140px] max-w-full text-sm focus:ring-2 focus:ring-blue-300 ${missing?'border-red-400 ring-2 ring-red-200':''}`}
+                                className={`rounded-xl px-3 py-2 w-full min-w-[140px] max-w-full text-sm bg-blue-50 focus:ring-2 focus:ring-blue-300 border-0 ${missing?'ring-2 ring-red-200 bg-red-50':''}`}
                                 value={resp[key] || ''}
                                 onChange={e => handleTSA(sec, it, e.target.value)}
                                 required
@@ -751,40 +761,40 @@ y += 8;
                                   <option key={opt} value={opt}>{opt}</option>
                                 ))}
                               </select>
-                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
+                              {missing && <div className="text-xs text-red-600 mt-1 font-semibold">Required</div>}
                             </td>
                           </tr>
                         );
                       }
                       return (
-                        <tr id={key} key={it.id} className={`even:bg-gray-50 hover:bg-gray-50 ${missing?'bg-red-50':''}`}>
-                          <td className="border px-2 py-1">{it.q}</td>
+                        <tr id={key} key={it.id} className={`even:bg-blue-50/40 hover:bg-blue-100/40 ${missing?'bg-red-50':''}`}>
+                          <td className="border-0 px-3 py-2 font-medium text-black">{it.q}</td>
                           {isTimeField ? (
-                            <td colSpan={options.length} className="border px-2 py-1 text-center">
+                            <td colSpan={options.length} className="border-0 px-3 py-2 text-center">
                               <button
                                 type="button"
                                 onClick={() => handleCaptureTime(sec, it)}
-                                className={`bg-blue-100 px-4 py-1 rounded-full hover:bg-blue-200 transition ${missing?'border-red-400 ring-2 ring-red-200':''}`}
+                                className={`bg-blue-200/80 px-6 py-2 rounded-full font-semibold text-blue-900 shadow-sm hover:bg-blue-300/80 transition focus:ring-2 focus:ring-blue-400 ${missing?'ring-2 ring-red-200 bg-red-50':''}`}
                               >
                                 Capture
                               </button>
-                              {resp[key] && <span className="ml-2 text-sm text-gray-600">{resp[key]}</span>}
-                              {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
+                              {resp[key] && <span className="ml-3 text-base text-blue-900 font-semibold">{resp[key]}</span>}
+                              {missing && <div className="text-xs text-red-600 mt-1 font-semibold">Required</div>}
                             </td>
                           ) : (
                             <>
                               {options.map(([opt]) => {
                                 const sel = resp[key] === opt;
                                 return (
-                                  <td key={opt} className={`border px-2 py-1 ${missing ? 'bg-red-50 border-red-400 ring-2 ring-red-200' : ''}`}>
+                                  <td key={opt} className={`border-0 px-2 py-1 ${missing ? 'bg-red-50 border-red-400 ring-2 ring-red-200' : ''}`}>
                                     <div className="flex justify-center flex-wrap gap-1 w-full">
                                       <button
                                         type="button"
                                         onClick={() => handleOption(sec, it, opt)}
                                         className={
                                           sel
-                                            ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
-                                            : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
+                                            ? `${colorMap[opt].selected} px-4 py-2 text-sm rounded-full shadow-md font-bold transition`
+                                            : `${colorMap[opt].base} text-gray-900 px-4 py-2 text-sm rounded-full shadow-sm font-semibold transition`
                                         }
                                       >
                                         {opt.toUpperCase()}
@@ -793,7 +803,6 @@ y += 8;
                                   </td>
                                 );
                               })}
-                              
                             </>
                           )}
                         </tr>
@@ -801,32 +810,32 @@ y += 8;
                     })}
                   </tbody>
                 </table>
-                <div className="mt-2 fade-in">
-                  <label className="block text-xs font-semibold">Section Remarks</label>
+                <div className="mt-3 fade-in">
+                  <label className="block text-xs font-semibold text-blue-900">Section Remarks</label>
                   <textarea
                     value={remarks[sec.id] || ''}
                     onChange={e => setRemarks(r => ({ ...r, [sec.id]: e.target.value }))}
-                    className="w-full p-2 border rounded mt-1"
+                    className="w-full p-3 border-0 rounded-xl bg-blue-50 mt-1 focus:ring-2 focus:ring-blue-300 text-blue-900"
                     placeholder="Enter remarks for this section (optional)"
                     rows={2}
                   />
                 </div>
                 {/* Only show image upload for Grooming & Hygiene section, and show error if missing */}
                 {sec.id === 'GroomingHygiene' && (
-                  <div className="mt-2 fade-in">
-                    <label className="block text-xs font-semibold">Upload Images</label>
-                    <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 ${incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene')?'border-red-400 ring-2 ring-red-200':''}`} />
+                  <div className="mt-3 fade-in">
+                    <label className="block text-xs font-semibold text-blue-900">Upload Images</label>
+                    <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className={`mt-1 rounded-xl bg-blue-50 focus:ring-2 focus:ring-blue-300 ${incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene')?'border-red-400 ring-2 ring-red-200 bg-red-50':''}`} />
                     <div className="flex space-x-2 mt-2 overflow-x-auto">
-                      {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />)}
+                      {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-xl border shadow-sm" />)}
                     </div>
-                    {incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene') && <div className="text-xs text-red-600 mt-1">At least one Grooming & Hygiene image is required</div>}
+                    {incompleteFields.some(f=>f.type==='img'&&f.secId==='GroomingHygiene') && <div className="text-xs text-red-600 mt-1 font-semibold">At least one Grooming & Hygiene image is required</div>}
                   </div>
                 )}
               </div>
             ))}
-            <div className="flex space-x-4 fade-in">
-              <button type="button" onClick={resetAll} className="flex-1 bg-blue-100 py-3 rounded-full hover:bg-blue-200 transition">New Response</button>
-              <button type="submit" className={`flex-1 bg-green-100 py-3 rounded-full hover:bg-green-200 transition ${downloading?'opacity-70 pointer-events-none':''}`}>
+            <div className="flex space-x-4 fade-in mt-6">
+              <button type="button" onClick={resetAll} className="flex-1 bg-blue-600 text-white py-3 rounded-full font-bold shadow-md hover:bg-blue-700 transition text-lg">New Response</button>
+              <button type="submit" className={`flex-1 bg-green-600 text-white py-3 rounded-full font-bold shadow-md hover:bg-green-700 transition text-lg ${downloading?'opacity-70 pointer-events-none':''}`}>
                 {downloading? 'Generating Report...':'Submit & Download PDF'}
               </button>
             </div>
