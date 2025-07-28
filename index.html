@@ -270,7 +270,7 @@
       // End time and final questions
       {
         id: 'EndTime',
-        title: '',
+        title: 'Overall',
         items: [
           { id: 'EndTime', q: 'End time:', w: 0 },
           { id: 'CupImage', q: 'Image of Cup 1 & 2 together', w: 0 },
@@ -636,11 +636,19 @@ y += 8;
             {SECTIONS.map(sec => (
               <div key={sec.id} id={`${sec.id}-section`} className="mb-4 report-box p-2 fade-in">
                 <h2 className="section-title">{sec.title}</h2>
-                <table className="w-full border-collapse mt-1 mb-2">
+                <table className="w-full border-collapse mt-1 mb-2 table-fixed">
+                  <colgroup>
+                    <col style={{width:'60%'}} />
+                    <col style={{width:'13%'}} />
+                    <col style={{width:'12%'}} />
+                    <col style={{width:'15%'}} />
+                  </colgroup>
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="border px-2 py-1 text-left text-xs font-bold">Question</th>
-                      {options.map(([opt]) => <th key={opt} className="border px-2 py-1 text-center text-xs uppercase">{opt}</th>)}
+                      <th className="border px-2 py-1 text-left text-xs font-bold w-[60%]">Question</th>
+                      {options.map(([opt], idx) => (
+                        <th key={opt} className={`border px-2 py-1 text-center text-xs uppercase ${idx===0?'w-[13%]':idx===1?'w-[12%]':'w-[15%]'}`}>{opt}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -651,11 +659,15 @@ y += 8;
                       if (sec.id === 'EndTime' && it.id === 'CupImage') {
                         return (
                           <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
-                            <td className="border px-2 py-1">{it.q}</td>
-                            <td colSpan={options.length} className="border px-2 py-1 text-center">
-                              <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1" />
-                              <div className="flex space-x-2 mt-2 overflow-x-auto">
-                                {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />)}
+                            <td className="border px-2 py-1 align-top">{it.q}</td>
+                            <td colSpan={options.length} className="border px-2 py-1 text-left align-top">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+                                <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1 w-full sm:w-auto" />
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {(imgs[sec.id] || []).map((s, i) => (
+                                    <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />
+                                  ))}
+                                </div>
                               </div>
                             </td>
                           </tr>
