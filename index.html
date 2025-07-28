@@ -273,10 +273,10 @@
         title: '',
         items: [
           { id: 'EndTime', q: 'End time:', w: 0 },
-          { id: 'CupImage', q: 'Cup 1 &  2- Image', w: 0 },
-          { id: 'FoamAmount', q: 'Did the 2 beverages presented have the right amount of foam as per the beverage created', w: 5 },
+          { id: 'CupImage', q: 'Image of Cup 1 & 2 together', w: 0 },
+          { id: 'FoamAmount', q: 'Did the beverages presented have the right amount of foam', w: 5 },
           { id: 'SmileInteraction', q: 'Did the barista smile and have an engaging interaction with the judge', w: 3 },
-          { id: 'CounterClean', q: 'Did the barista leave the counter clean after finishing his/her performance', w: 5 }
+          { id: 'CounterClean', q: 'Did the barista leave the counter clean after finishing their performance', w: 5 }
         ]
       }
     ];
@@ -671,12 +671,13 @@ y += 8;
                         return (
                           <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
                             <td className="border px-2 py-1">{it.q}</td>
-                            <td colSpan={options.length} className="border px-2 py-1 text-center">
+                            <td colSpan={options.length} className="border px-2 py-1 text-left align-middle">
                               <select
-                                className="border rounded px-2 py-1"
+                                className="border rounded px-2 py-1 w-full min-w-[140px] max-w-full text-sm focus:ring-2 focus:ring-blue-300"
                                 value={resp[key] || ''}
                                 onChange={e => handleTSA(sec, it, e.target.value)}
                                 required
+                                style={{maxWidth:'100%'}}
                               >
                                 <option value="" disabled>Select beverage</option>
                                 {beverageOptions.map(opt => (
