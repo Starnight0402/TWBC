@@ -55,7 +55,7 @@
     }
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycby8wzJpNefsm1F082OMeLUbwZSTFECeiT087urDhYqGSqH0VeHmV5REB8Lw7daLUs22/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw5YyUhH0s6sztCszUdGea7q5E8TSaoEwpN-0gWk7h3GJ61wNhKAvrgLh1C0n2wOxQ4/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
