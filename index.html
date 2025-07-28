@@ -452,11 +452,35 @@
           score: total,
           percentage: pct
         });
-        try {
-          await fetch(LOG_ENDPOINT, { method: "POST", body: data });
-        } catch {
-          // Logging failed, but continue
+        const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycby_ig6jzz7Ub-EeTvouGSIyJAW58YMWe4A8pTwjL1fEqbj7EJRQ8wEvQc9eBOyfXdk7/exec"; // Define LOG_ENDPOINT if not already
+        const MAX_RETRIES = 3; // Define maximum number of retries
+        let retries = 0;
+        let loggingSuccessful = false;
+
+        while (retries < MAX_RETRIES && !loggingSuccessful) {
+          try {
+            const response = await fetch(LOG_ENDPOINT, { method: "POST", body: data });
+            if (response.ok) { // Check if the response status is in the 200-299 range
+              loggingSuccessful = true;
+              console.log("Logging to Google Sheets successful.");
+            } else {
+              console.error(`Logging attempt failed with status: ${response.status}`);
+              retries++;
+              await new Promise(resolve => setTimeout(resolve, 1000 * retries)); // Wait before retrying
+            }
+          } catch (error) {
+            console.error("Logging attempt failed:", error);
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, 1000 * retries)); // Wait before retrying
+          }
         }
+
+        if (!loggingSuccessful) {
+          console.error("Logging to Google Sheets failed after multiple retries.");
+          // Optionally, provide user feedback here, e.g., show a message
+        }
+
+
         safeVibrate(100);
         // PDF Generation
         const {jsPDF}=window.jspdf;
