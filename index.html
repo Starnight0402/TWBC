@@ -772,27 +772,29 @@ y += 8;
                               {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
                             </td>
                           ) : (
-                            options.map(([opt]) => {
-                              const sel = resp[key] === opt;
-                              return (
-                                <td key={opt} className="border px-2 py-1">
-                                  <div className="flex justify-center flex-wrap gap-1 w-full">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOption(sec, it, opt)}
-                                      className={
-                                        sel
-                                          ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition ${missing?'border-red-400 ring-2 ring-red-200':''}`
-                                          : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition ${missing?'border-red-400 ring-2 ring-red-200':''}`
-                                      }
-                                    >
-                                      {opt.toUpperCase()}
-                                    </button>
-                                  </div>
-                                  {missing && <div className="text-xs text-red-600 mt-1">Required</div>}
-                                </td>
-                              );
-                            })
+                            <>
+                              {options.map(([opt]) => {
+                                const sel = resp[key] === opt;
+                                return (
+                                  <td key={opt} className={`border px-2 py-1 ${missing ? 'bg-red-50 border-red-400 ring-2 ring-red-200' : ''}`}>
+                                    <div className="flex justify-center flex-wrap gap-1 w-full">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOption(sec, it, opt)}
+                                        className={
+                                          sel
+                                            ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
+                                            : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
+                                        }
+                                      >
+                                        {opt.toUpperCase()}
+                                      </button>
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                              
+                            </>
                           )}
                         </tr>
                       );
