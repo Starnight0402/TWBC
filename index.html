@@ -55,7 +55,7 @@
     }
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwWDRWp8MxWidcQulsdcrtIOB6YLMQj5r2HpWszWgnigiVMlYWlkvOubjfAYeUxFvriYg/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycby8wzJpNefsm1F082OMeLUbwZSTFECeiT087urDhYqGSqH0VeHmV5REB8Lw7daLUs22/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -409,6 +409,72 @@
         }
         const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
+
+        // --- LOGGING TO GOOGLE SHEETS (NO IMAGES) ---
+        try {
+          // Prepare log data: top fields and all questions with response and score (no images)
+          let logData = {
+            participantName,
+            participantEmpID,
+            storeName,
+            storeID,
+            coffeeMachineName,
+            judgeName,
+            judgeId,
+            completion,
+            dialInTimeTaken,
+            milkTimeTaken,
+            totalScore: total,
+            maxScore: max,
+            percent: pct,
+            sections: SECTIONS.map(sec => ({
+              id: sec.id,
+              title: sec.title,
+              score: sectionScores[sec.id],
+              max: sectionMax[sec.id],
+              items: sec.items.map(it => {
+                const key = `${sec.id}_${it.id}`;
+                const r = resp[key];
+                let respText =
+                  sec.id === "TSA"
+                    ? r
+                    : r === "yes"
+                    ? "Yes"
+                    : r === "no"
+                    ? "No"
+                    : r === "na"
+                    ? "NA"
+                    : r;
+                let score;
+                if (sec.id === "TSA") {
+                  score = parseInt(r) || 0;
+                } else if (r === "yes") {
+                  score = it.w;
+                } else if (r === "no" && it.wneg) {
+                  score = it.wneg;
+                } else if (r === "na") {
+                  score = "NA";
+                } else {
+                  score = 0;
+                }
+                return {
+                  id: it.id,
+                  question: it.q,
+                  response: respText,
+                  score
+                };
+              }),
+              remarks: remarks[sec.id] || ''
+            }))
+          };
+          await fetch(LOG_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(logData)
+          });
+        } catch (err) {
+          // Logging failed, but continue
+        }
         // PDF Generation
         const {jsPDF}=window.jspdf;
         const doc=new jsPDF({orientation:'portrait',unit:'mm'});
