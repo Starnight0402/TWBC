@@ -718,18 +718,20 @@ y += 8;
                             options.map(([opt]) => {
                               const sel = resp[key] === opt;
                               return (
-                                <td key={opt} className="border px-2 py-1 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOption(sec, it, opt)}
-                                    className={
-                                      sel
-                                        ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
-                                        : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
-                                    }
-                                  >
-                                    {opt.toUpperCase()}
-                                  </button>
+                                <td key={opt} className="border px-2 py-1">
+                                  <div className="flex justify-center flex-wrap gap-1 w-full">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOption(sec, it, opt)}
+                                      className={
+                                        sel
+                                          ? `${colorMap[opt].selected} px-2 py-0.5 text-xs rounded-full transition`
+                                          : `${colorMap[opt].base} px-2 py-0.5 text-xs rounded-full transition`
+                                      }
+                                    >
+                                      {opt.toUpperCase()}
+                                    </button>
+                                  </div>
                                 </td>
                               );
                             })
