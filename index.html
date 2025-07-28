@@ -60,6 +60,7 @@
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
     const SECTIONS = [
+      // Grooming & Hygiene
       {
         id: 'GroomingHygiene',
         title: 'Grooming & Hygiene',
@@ -74,13 +75,21 @@
           { id: 'JewelryPermitted', q: 'Only permitted jewelry worn', w: 1 }
         ]
       },
+      // Espresso (Dial-In)
       {
         id: 'EspressoDialIn',
         title: 'Espresso (Dial-In)',
         items: [
           { id: 'Shot0', q: 'Shot extracted to check the recipe', w: 0 },
-          { id: 'DialInStartTime', q: 'Dial-In Start time:', w: 0 },
-          { id: 'Shot1', q: 'Is the barista able to change the grind size based on under/over extracted shot', w: 5 },
+          { id: 'DialInStartTime', q: 'Dial-In Start time:', w: 0 }
+        ]
+      },
+      // Espresso (Dial-In) Shot 1
+      {
+        id: 'EspressoDialInShot1',
+        title: 'Espresso (Dial-In) Shot 1',
+        items: [
+          { id: 'GrindChange', q: 'Is the barista able to change the grind size based on under/over extracted shot', w: 5 },
           { id: 'ExplainDialIn', q: 'Is the barista able to explain the dial-in process', w: 3 },
           { id: 'WasteDose', q: 'Did the barista waste a dose after changing the grind size every time', w: 3 },
           { id: 'CheckWeight', q: 'Did the barista check the weight of the ground coffee after changing the grind size', w: 2 },
@@ -93,22 +102,63 @@
           { id: 'CoffeeLevelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
           { id: 'TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
           { id: 'PortaFilterRim', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
-          { id: 'FlushGrouphead', q: 'Barista Flushes the grouphead before insert', w: 3 },
+          { id: 'FlushGrouphead', q: 'Barista Flushes the grouphead befor insert', w: 3 },
           { id: 'DripTrayWiped', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
           { id: 'PortaFilterSmooth', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
           { id: 'ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
           { id: 'FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
           { id: 'ShotBrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
-          { id: 'ShotYield', q: 'Was the shot extracted within the yield (+/- 1 g)', w: 5 },
+          { id: 'ShotYield', q: 'Was the shot extracted within the  yield  (+/- 1 g )', w: 5 }
+        ]
+      },
+      // Espresso (Dial-In) Shot 2
+      {
+        id: 'EspressoDialInShot2',
+        title: 'Espresso (Dial-In) Shot -2',
+        items: [
+          { id: 'GrindChange', q: 'Is the barista able to change the grind size based on under/over extracted shot', w: 5 },
+          { id: 'ExplainDialIn', q: 'Is the barista able to explain the dial-in process', w: 3 },
+          { id: 'WasteDose', q: 'Did the barista waste a dose after changing the grind size every time', w: 3 },
+          { id: 'CheckWeight', q: 'Did the barista check the weight of the ground coffee after changing the grind size', w: 2 },
+          { id: 'GrindingTime', q: 'Is the barista able to set the grinding time to dispense the right amount for dose', w: 2 },
+          { id: 'GrinderCleaned', q: 'Area around the grinder cleaned with brush to clear out grounds', w: 2 },
+          { id: 'PortaFilterDry', q: 'Porta filter wiped with dry grey cloth', w: 2 },
+          { id: 'BasketFreeGrounds', q: 'Porta filter basket free from brewed coffee gounds', w: 2 },
+          { id: 'RightBasket', q: 'Right basket porta filter used for intended shot', w: 2 },
+          { id: 'RightGrammage', q: 'Right grammage of ground coffee taken', w: 2 },
+          { id: 'CoffeeLevelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
+          { id: 'TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
+          { id: 'PortaFilterRim', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
+          { id: 'FlushGrouphead', q: 'Barista Flushes the grouphead befor insert', w: 3 },
+          { id: 'DripTrayWiped', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
+          { id: 'PortaFilterSmooth', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
+          { id: 'ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
+          { id: 'FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
+          { id: 'ShotBrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
+          { id: 'ShotYield', q: 'Was the shot extracted within the  yield  (+/- 1 g )', w: 5 }
+        ]
+      },
+      {
+        id: 'DialInEndTime',
+        title: '',
+        items: [
           { id: 'DialInEndTime', q: 'Dial-In End time:', w: 0 }
         ]
       },
+      // Milk Based Beverages
       {
         id: 'MilkBasedBeverages',
         title: 'Milk Based Beverages',
         items: [
           { id: 'BeverageName', q: 'Mention the name of the beverage that is asked to be prepared.', w: 0 },
-          { id: 'StartTime', q: 'Start time:', w: 0 },
+          { id: 'StartTime', q: 'Start time:', w: 0 }
+        ]
+      },
+      // Milk Based Beverages Cup-1
+      {
+        id: 'MilkCup1',
+        title: 'Milk Based Beverages  Cup-1',
+        items: [
           { id: 'Cup1PreWarmed', q: 'Is the cup pre-warmed before extraction', w: 2 },
           { id: 'Cup1DryCloth', q: 'Porta filter wiped with dry grey cloth', w: 2 },
           { id: 'Cup1BasketFree', q: 'Porta filter basket free from brewed coffee gounds', w: 2 },
@@ -117,24 +167,38 @@
           { id: 'Cup1Levelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
           { id: 'Cup1TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
           { id: 'Cup1RimWiped', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
-          { id: 'Cup1FlushGrouphead', q: 'Barista Flushes the grouphead before insert', w: 3 },
+          { id: 'Cup1FlushGrouphead', q: 'Barista Flushes the grouphead befor insert', w: 3 },
           { id: 'Cup1DripTray', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
           { id: 'Cup1SmoothInsert', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
           { id: 'Cup1ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
           { id: 'Cup1FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
           { id: 'Cup1BrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
-          { id: 'Cup1Yield', q: 'Was the shot extracted within the yield (+/- 1 g)', w: 5 },
+          { id: 'Cup1Yield', q: 'Was the shot extracted within the  yield  (+/- 1 g )', w: 5 }
+        ]
+      },
+      // Cup-1 Steaming
+      {
+        id: 'Cup1Steaming',
+        title: 'Cup-1 Steaming',
+        items: [
           { id: 'SteamingExplain', q: 'Is the barista able to explain the milk steaming process', w: 2 },
           { id: 'SteamingPurged', q: 'Steaming wand is purged before use', w: 3 },
           { id: 'CleanPitcher', q: 'Is the Barista uses a clean milk pitcher for every order', w: 2 },
           { id: 'RightPitcher', q: 'Is the barista using the right milk pitcher for the intended beverage size', w: 3 },
-          { id: 'ColdMilk', q: 'In the barista using cold milk stored in the chiller', w: 3 },
+          { id: 'ColdMilk', q: 'In the barista using cold milk  stored in the chiller', w: 3 },
           { id: 'MilkPouch', q: 'Is the milk pouch stored in the 900ml pitcher', w: 1 },
           { id: 'RightMilkAmount', q: 'Is the barista taking the right amount of milk for the intended beverage size', w: 3 },
           { id: 'FoamConsistency', q: 'Is the barista able to create the right consistency of foam for a latte/ Cappuccino/Flat white', w: 3 },
-          { id: 'SteamingWiped', q: 'Steaming wand is wiped & purged after use', w: 3 },
+          { id: 'SteamingWiped', q: 'Steaming wand is  wiped & purged after use', w: 3 },
           { id: 'GreenClothSteam', q: 'Did the barista use the right green cloth to wipe the steam wand', w: 3 },
-          { id: 'GreenClothStored', q: 'Did the barista store the green cloth in the GN pan after use', w: 2 },
+          { id: 'GreenClothStored', q: 'Did the barista store the green cloth in the GN pan after use', w: 2 }
+        ]
+      },
+      // Cup-1 Pouring
+      {
+        id: 'Cup1Pouring',
+        title: 'Cup-1 pouring',
+        items: [
           { id: 'TapPitcher', q: 'Does the barista tap the pitcher to remove excess bubbles (if any)', w: 1 },
           { id: 'SwirlPitcher', q: 'Did the barista swirl the pitcher to ensure the milk and foam is well mixed', w: 1 },
           { id: 'LatteArt', q: 'Barista able to create latte art in the cup (Cappuccino- Heart , Latte- Tulip/ Rosetta , Flat white - Single dot )', w: 5 },
@@ -144,9 +208,72 @@
           { id: 'IdenticalArt', q: 'Did the 2 beverages presented have identical latte art', w: 5 },
           { id: 'NoSpillage', q: 'No spillage of espresso or milk on the outer part of the cup', w: 2 },
           { id: 'MilkWastage', q: 'Milk wastage less than 50ml', w: 3 },
-          { id: 'CleanPitcherAfter', q: 'Did the barista clean the milk pitcher after use', w: 1 },
+          { id: 'CleanPitcherAfter', q: 'Did the barista clean the milk pitcher after use', w: 1 }
+        ]
+      },
+      // Cup-2
+      {
+        id: 'MilkCup2',
+        title: 'Cup-2',
+        items: [
+          { id: 'Cup2PreWarmed', q: 'Is the cup pre-warmed before extraction', w: 2 },
+          { id: 'Cup2DryCloth', q: 'Porta filter wiped with dry grey cloth', w: 2 },
+          { id: 'Cup2BasketFree', q: 'Porta filter basket free from brewed coffee gounds', w: 2 },
+          { id: 'Cup2RightBasket', q: 'Right basket porta filter used for intended shot', w: 2 },
+          { id: 'Cup2Grammage', q: 'Right grammage of ground coffee taken', w: 2 },
+          { id: 'Cup2Levelled', q: 'Coffee grounds levelled using tap/chop method before tamping', w: 3 },
+          { id: 'Cup2TampingMachine', q: 'Tamping machine set as per standard', w: 2 },
+          { id: 'Cup2RimWiped', q: 'Porta filter rim wiped to clear loose coffee grounds before inserting into group head', w: 2 },
+          { id: 'Cup2FlushGrouphead', q: 'Barista Flushes the grouphead befor insert', w: 3 },
+          { id: 'Cup2DripTray', q: 'Drip tray wiped with the right green cloth after flushing', w: 2 },
+          { id: 'Cup2SmoothInsert', q: 'Porta filter inserted into group head smoothly without knocking', w: 3 },
+          { id: 'Cup2ExtractionButton', q: 'Right extraction button pressed within 3 seconds of inserting the porta filter', w: 3 },
+          { id: 'Cup2FlowEvenly', q: 'Did the espresso flow evenly from both the spouts', w: 3 },
+          { id: 'Cup2BrewTime', q: 'Was the shot extracted within the brew time', w: 5 },
+          { id: 'Cup2Yield', q: 'Was the shot extracted within the  yield  (+/- 1 g )', w: 5 }
+        ]
+      },
+      // Cup-2 Steaming
+      {
+        id: 'Cup2Steaming',
+        title: 'Cup-2 Steaming',
+        items: [
+          { id: 'SteamingExplain', q: 'Is the barista able to explain the milk steaming process', w: 2 },
+          { id: 'SteamingPurged', q: 'Steaming wand is purged before use', w: 3 },
+          { id: 'CleanPitcher', q: 'Is the Barista uses a clean milk pitcher for every order', w: 2 },
+          { id: 'RightPitcher', q: 'Is the barista using the right milk pitcher for the intended beverage size', w: 3 },
+          { id: 'ColdMilk', q: 'In the barista using cold milk  stored in the chiller', w: 3 },
+          { id: 'MilkPouch', q: 'Is the milk pouch stored in the 900ml pitcher', w: 1 },
+          { id: 'RightMilkAmount', q: 'Is the barista taking the right amount of milk for the intended beverage size', w: 3 },
+          { id: 'FoamConsistency', q: 'Is the barista able to create the right consistency of foam for a latte/ Cappuccino/Flat white', w: 3 },
+          { id: 'SteamingWiped', q: 'Steaming wand is  wiped & purged after use', w: 3 },
+          { id: 'GreenClothSteam', q: 'Did the barista use the right green cloth to wipe the steam wand', w: 3 },
+          { id: 'GreenClothStored', q: 'Did the barista store the green cloth in the GN pan after use', w: 2 }
+        ]
+      },
+      // Cup-2 Pouring
+      {
+        id: 'Cup2Pouring',
+        title: 'Cup-2 Pouring',
+        items: [
+          { id: 'TapPitcher', q: 'Does the barista tap the pitcher to remove excess bubbles (if any)', w: 1 },
+          { id: 'SwirlPitcher', q: 'Did the barista swirl the pitcher to ensure the milk and foam is well mixed', w: 1 },
+          { id: 'LatteArt', q: 'Barista able to create latte art in the cup (Cappuccino- Heart , Latte- Tulip/ Rosetta , Flat white - Single dot )', w: 5 },
+          { id: 'LatteArtCenter', q: 'Is the latte art in the centre of the cup', w: 3 },
+          { id: 'ContrastCrema', q: 'is there a visible contrast between the crema and the latte art', w: 3 },
+          { id: 'LatteArtFacing', q: 'Is the latte art facing the customer with the handle on the right side', w: 3 },
+          { id: 'NoSpillage', q: 'No spillage of espresso or milk on the outer part of the cup', w: 2 },
+          { id: 'MilkWastage', q: 'Milk wastage less than 50ml', w: 3 },
+          { id: 'CleanPitcherAfter', q: 'Did the barista clean the milk pitcher after use', w: 1 }
+        ]
+      },
+      // End time and final questions
+      {
+        id: 'EndTime',
+        title: '',
+        items: [
           { id: 'EndTime', q: 'End time:', w: 0 },
-          { id: 'CupImage', q: 'Cup 1 & 2 - Image', w: 0 },
+          { id: 'CupImage', q: 'Cup 1 &  2- Image', w: 0 },
           { id: 'FoamAmount', q: 'Did the 2 beverages presented have the right amount of foam as per the beverage created', w: 5 },
           { id: 'SmileInteraction', q: 'Did the barista smile and have an engaging interaction with the judge', w: 3 },
           { id: 'CounterClean', q: 'Did the barista leave the counter clean after finishing his/her performance', w: 5 }
@@ -221,7 +348,13 @@
       };
       // Check completion
       const allDone = participantName.trim() && participantEmpID.trim() && storeName.trim() && storeID.trim() && coffeeMachineName.trim() &&
-        SECTIONS.every(sec=>sec.items.every(it=>resp[`${sec.id}_${it.id}`]!=null));
+        SECTIONS.every(sec => sec.items.every(it => {
+          // For CupImage, require at least one image uploaded
+          if (sec.id === 'EndTime' && it.id === 'CupImage') {
+            return imgs[sec.id] && imgs[sec.id].length > 0;
+          }
+          return resp[`${sec.id}_${it.id}`] != null;
+        }));
       // SUBMIT & PDF
       const handleSubmit=async e=>{
         e.preventDefault();
@@ -229,6 +362,15 @@
         setDownloading(true);
         // Score calculation
         let total=0, max=0, sectionScores={}, sectionMax={};
+        // For time fields
+        const getTime = (secId, itemId) => {
+          const sec = SECTIONS.find(s => s.id === secId);
+          if (!sec) return '';
+          const it = sec.items.find(i => i.id === itemId);
+          if (!it) return '';
+          return resp[`${secId}_${itemId}`] || '';
+        };
+        // Calculate scores
         SECTIONS.forEach(sec=>{
           let secTotal=0, secMax=0;
           sec.items.forEach(it=>{
@@ -246,6 +388,27 @@
         });
         const pct = max?Math.round((total/max)*100):0;
         const completion=new Date().toLocaleString('en-GB',{hour12:false});
+        // Get times for top summary
+        const dialInStart = getTime('EspressoDialIn', 'DialInStartTime');
+        const dialInEnd = getTime('DialInEndTime', 'DialInEndTime');
+        const milkStart = getTime('MilkBasedBeverages', 'StartTime');
+        const milkEnd = getTime('EndTime', 'EndTime');
+        // Helper to get time diff in mm:ss
+        function getTimeDiff(start, end) {
+          if (!start || !end) return '-';
+          const [sh, sm, ss] = start.split(':').map(Number);
+          const [eh, em, es] = end.split(':').map(Number);
+          if ([sh, sm, ss, eh, em, es].some(isNaN)) return '-';
+          let startSec = sh * 3600 + sm * 60 + ss;
+          let endSec = eh * 3600 + em * 60 + es;
+          let diff = endSec - startSec;
+          if (diff < 0) diff += 24 * 3600; // handle midnight wrap
+          const min = Math.floor(diff / 60);
+          const sec = diff % 60;
+          return `${min}m ${sec}s`;
+        }
+        const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
+        const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
         // PDF Generation
         const {jsPDF}=window.jspdf;
         const doc=new jsPDF({orientation:'portrait',unit:'mm'});
@@ -262,12 +425,25 @@
         doc.text(`Judge Name: ${judgeName}`, 10, 30);
         doc.text(`Judge ID: ${judgeId}`, 10, 35);
         doc.text(`Date/Time: ${completion}`, 10, 40);
-        doc.text(`Score: ${total} / ${max} (${pct}%)`, 10, 45);
-        doc.text(`Machine Name: ${coffeeMachineName}`, 10, 50);
-        doc.text(`Store Name: ${storeName}`, 10, 55);
-        doc.text(`Store ID: ${storeID}`, 10, 60);
+        doc.text(`Machine Name: ${coffeeMachineName}`, 10, 45);
+        doc.text(`Store Name: ${storeName}`, 10, 50);
+        doc.text(`Store ID: ${storeID}`, 10, 55);
+        // Dial-In and Milk-Based Times
+let y = 62;
+doc.setFont('helvetica','bold');
+doc.setFontSize(14);
+doc.setTextColor('#1a237e');
+doc.text(`Time taken for espresso: ${dialInTimeTaken}`, 105, y, {align: 'center'});
+y += 8;
+doc.text(`Time taken for milk based: ${milkTimeTaken}`, 105, y, {align: 'center'});
+y += 8;
+        // Score and Percentage (bold and prominent)
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(15);
+        doc.setTextColor('#00695c');
+        doc.text(`Score: ${total} / ${max}   (${pct}%)`, 105, y, { align: 'center' });
+        y += 10;
         // Section Details
-        let y = 70;
         const sectionBg = [
           "#E3F6FC",
           "#FEF6E4",
@@ -281,7 +457,11 @@
         for (let s = 0; s < SECTIONS.length; s++) {
           const sec = SECTIONS[s];
           const bg = sectionBg[s % sectionBg.length];
-          // Section title in box
+          // Section title in colored box with divider line above
+          doc.setDrawColor('#bdbdbd');
+          doc.setLineWidth(0.7);
+          doc.line(15, y, 195, y); // divider line
+          y += 3;
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13);
           doc.setFillColor(bg);
@@ -311,14 +491,18 @@
                   : r === "na"
                   ? "NA"
                   : r;
-              let score =
-                sec.id === "TSA"
-                  ? parseInt(r) || 0
-                  : r === "yes"
-                  ? it.w
-                  : r === "no" && it.wneg
-                  ? it.wneg
-                  : 0;
+              let score;
+              if (sec.id === "TSA") {
+                score = parseInt(r) || 0;
+              } else if (r === "yes") {
+                score = it.w;
+              } else if (r === "no" && it.wneg) {
+                score = it.wneg;
+              } else if (r === "na") {
+                score = "NA";
+              } else {
+                score = 0;
+              }
               return [it.q, respText, score];
             }),
             margin: { left: 18, right: 18 },
@@ -334,7 +518,7 @@
             showHead: "everyPage",
           });
           let nextY = doc.lastAutoTable.finalY + 4;
-          // REMARKS: Insert remarks below table, above images
+          // REMARKS: Insert remarks below table
           if (remarks[sec.id] && remarks[sec.id].trim()) {
             doc.setFont("helvetica", "italic");
             doc.setFontSize(10);
@@ -346,31 +530,46 @@
             doc.text(splitRemarks, 18, nextY);
             nextY += splitRemarks.length * 6 + 2;
           }
-          // IMAGES (below remarks, still in section box)
-          if (imgs[sec.id] && imgs[sec.id].length) {
-            let imgPerRow = 6;
-            let imgW = 24,
-              imgH = 24,
-              gap = 6;
-            let baseX = 18,
-              baseY = nextY;
-            imgs[sec.id].forEach((src, i) => {
-              let row = Math.floor(i / imgPerRow);
-              let col = i % imgPerRow;
-              let x = baseX + col * (imgW + gap);
-              let y = baseY + row * (imgH + gap);
-              if (y > 265) {
-                doc.addPage();
-                baseY = 20;
-                y = baseY;
-              }
-              doc.addImage(src, "JPEG", x, y, imgW, imgH);
-            });
-          }
           y = nextY + 8;
           if (y > 200 && s !== SECTIONS.length - 1) {
             doc.addPage();
             y = 20;
+          }
+        }
+        // --- IMAGES AT END ---
+        // Grooming & Hygiene Images
+        const groomingImgs = imgs['GroomingHygiene'] || [];
+        const cupImgs = imgs['EndTime'] || [];
+        if (groomingImgs.length || cupImgs.length) {
+          doc.addPage();
+          let imgY = 20;
+          // Grooming Images (left half)
+          if (groomingImgs.length) {
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(13);
+            doc.setTextColor('#263140');
+            doc.text('Grooming & Hygiene Images', 40, imgY);
+            let x = 15, y = imgY + 5;
+            let imgW = 35, imgH = 35, gapY = 8;
+            groomingImgs.forEach((src, i) => {
+              if (i && i % 4 === 0) { y += imgH + gapY; x = 15; }
+              doc.addImage(src, 'JPEG', x, y, imgW, imgH);
+              x += imgW + 5;
+            });
+          }
+          // Cup Images (right half)
+          if (cupImgs.length) {
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(13);
+            doc.setTextColor('#263140');
+            doc.text('Cup Images', 150, imgY);
+            let x = 120, y = imgY + 5;
+            let imgW = 35, imgH = 35, gapY = 8;
+            cupImgs.forEach((src, i) => {
+              if (i && i % 4 === 0) { y += imgH + gapY; x = 120; }
+              doc.addImage(src, 'JPEG', x, y, imgW, imgH);
+              x += imgW + 5;
+            });
           }
         }
         doc.save(`audit_${participantName}_${Date.now()}.pdf`);
@@ -434,20 +633,60 @@
                 <input id="coffeeMachineName" value={coffeeMachineName} onChange={e=>{setCoffeeMachineName(e.target.value);safeLS.set('coffeeMachineName',e.target.value);}} required className="w-full p-2 border rounded"/>
               </div>
             </div>
-            {SECTIONS.map(sec=>(
+            {SECTIONS.map(sec => (
               <div key={sec.id} id={`${sec.id}-section`} className="mb-4 report-box p-2 fade-in">
                 <h2 className="section-title">{sec.title}</h2>
                 <table className="w-full border-collapse mt-1 mb-2">
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="border px-2 py-1 text-left text-xs font-bold">Question</th>
-                      {options.map(([opt])=><th key={opt} className="border px-2 py-1 text-center text-xs uppercase">{opt}</th>)}
+                      {options.map(([opt]) => <th key={opt} className="border px-2 py-1 text-center text-xs uppercase">{opt}</th>)}
                     </tr>
                   </thead>
                   <tbody>
                     {sec.items.map((it) => {
                       const key = `${sec.id}_${it.id}`;
                       const isTimeField = ['DialInStartTime', 'DialInEndTime', 'StartTime', 'EndTime'].includes(it.id);
+                      // CupImage question in EndTime section: show image upload in place of Yes/No/NA
+                      if (sec.id === 'EndTime' && it.id === 'CupImage') {
+                        return (
+                          <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                            <td className="border px-2 py-1">{it.q}</td>
+                            <td colSpan={options.length} className="border px-2 py-1 text-center">
+                              <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1" />
+                              <div className="flex space-x-2 mt-2 overflow-x-auto">
+                                {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />)}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      // BeverageName: dropdown instead of yes/no/na
+                      if (sec.id === 'MilkBasedBeverages' && it.id === 'BeverageName') {
+                        const beverageOptions = [
+                          '2 cappuccinos',
+                          '2 lattes',
+                          '2 flat whites'
+                        ];
+                        return (
+                          <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
+                            <td className="border px-2 py-1">{it.q}</td>
+                            <td colSpan={options.length} className="border px-2 py-1 text-center">
+                              <select
+                                className="border rounded px-2 py-1"
+                                value={resp[key] || ''}
+                                onChange={e => handleTSA(sec, it, e.target.value)}
+                                required
+                              >
+                                <option value="" disabled>Select beverage</option>
+                                {beverageOptions.map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        );
+                      }
                       return (
                         <tr id={key} key={it.id} className="even:bg-gray-50 hover:bg-gray-50">
                           <td className="border px-2 py-1">{it.q}</td>
@@ -483,19 +722,30 @@
                             })
                           )}
                         </tr>
-                      );                    })}
+                      );
+                    })}
                   </tbody>
                 </table>
                 <div className="mt-2 fade-in">
                   <label className="block text-xs font-semibold">Section Remarks</label>
-                  <textarea                    value={remarks[sec.id] || ''}                    onChange={e => setRemarks(r => ({ ...r, [sec.id]: e.target.value }))}                    className="w-full p-2 border rounded mt-1"                    placeholder="Enter remarks for this section (optional)"                    rows={2}                  />                </div>
-                <div className="mt-2 fade-in">
-                  <label className="block text-xs font-semibold">Upload Images</label>
-                  <input type="file" accept="image/*" capture="environment" multiple onChange={e=>addImages(sec,e)} className="mt-1"/>
-                  <div className="flex space-x-2 mt-2 overflow-x-auto">
-                    {(imgs[sec.id]||[]).map((s,i)=><img key={i} src={s} className="w-16 h-16 object-cover rounded-md border"/>) }
-                  </div>
+                  <textarea
+                    value={remarks[sec.id] || ''}
+                    onChange={e => setRemarks(r => ({ ...r, [sec.id]: e.target.value }))}
+                    className="w-full p-2 border rounded mt-1"
+                    placeholder="Enter remarks for this section (optional)"
+                    rows={2}
+                  />
                 </div>
+                {/* Only show image upload for Grooming & Hygiene section */}
+                {sec.id === 'GroomingHygiene' && (
+                  <div className="mt-2 fade-in">
+                    <label className="block text-xs font-semibold">Upload Images</label>
+                    <input type="file" accept="image/*" capture="environment" multiple onChange={e => addImages(sec, e)} className="mt-1" />
+                    <div className="flex space-x-2 mt-2 overflow-x-auto">
+                      {(imgs[sec.id] || []).map((s, i) => <img key={i} src={s} className="w-16 h-16 object-cover rounded-md border" />)}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <div className="flex space-x-4 fade-in">
