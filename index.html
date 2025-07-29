@@ -62,7 +62,7 @@
     }
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycby_ig6jzz7Ub-EeTvouGSIyJAW58YMWe4A8pTwjL1fEqbj7EJRQ8wEvQc9eBOyfXdk7/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -455,6 +455,30 @@
         }
         const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
+
+        // --- LOGGING TO GOOGLE SCRIPT ENDPOINT ---
+        try {
+          await fetch(LOG_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              participantName,
+              participantEmpID,
+              judgeName,
+              judgeId,
+              totalScore: total,
+              maxScore: max,
+              percent: pct,
+              sectionScores,
+              dialInTimeTaken,
+              milkTimeTaken,
+              submissionTime: completion
+            })
+          });
+        } catch (err) {
+          // Optionally handle error (e.g., show a warning, but don't block PDF)
+          console.warn('Log failed', err);
+        }
 
         safeVibrate(100);
         // PDF Generation
