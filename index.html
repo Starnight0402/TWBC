@@ -63,7 +63,7 @@
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
     // const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwX8hQsTMy9NrZCx8Jc7WwAAcy9mczdWt7mJ4hp5Fqq-vi9iFNYsriwQXA7An2Vr16Ulg/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwQ2srmyAqrNCRB6S4dNdlCMxGdWYV7PrrU1vY1t34oT2hwbT3Rnrzfh5flNQ8l32_JOw/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
