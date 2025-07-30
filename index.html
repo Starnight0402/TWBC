@@ -62,7 +62,8 @@
     }
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
+    // const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxJmo3dQaadVeUxi-Q4mSQZb4_ixcC3ZUuBlQd8neXsWr-Ojfr5yzouQWKVq_qt-kM15g/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -456,9 +457,14 @@
         const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
 
-        // --- LOGGING TO GOOGLE SCRIPT ENDPOINT ---
+        // --- LOGGING TO GOOGLE SCRIPT ENDPOINT --- 
+        const data = new URLSearchParams({
+          date: completion,
+          participantName, participantEmpID, judgeName, judgeId,
+          score: total, percentage: pct
+        });
         try {
-          await fetch(LOG_ENDPOINT, {
+          await fetch('https://script.google.com/macros/s/AKfycbzgyB7N4yCWFF8afuo5ZACyKfujiE3cONQrLOYp5d54t3FeLcBI1DohqZL3ZGBzI_hg/exec', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
