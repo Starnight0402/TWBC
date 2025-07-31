@@ -63,7 +63,7 @@
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
     // const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwQ2srmyAqrNCRB6S4dNdlCMxGdWYV7PrrU1vY1t34oT2hwbT3Rnrzfh5flNQ8l32_JOw/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxJmo3dQaadVeUxi-Q4mSQZb4_ixcC3ZUuBlQd8neXsWr-Ojfr5yzouQWKVq_qt-kM15g/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -464,7 +464,7 @@
           score: total, percentage: pct
         });
         try {
-          await fetch('https://script.google.com/macros/s/AKfycbwQ2srmyAqrNCRB6S4dNdlCMxGdWYV7PrrU1vY1t34oT2hwbT3Rnrzfh5flNQ8l32_JOw/exec', {
+          await fetch('https://formspree.io/f/xdkddwlk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -481,9 +481,24 @@
               submissionTime: completion
             })
           });
+
+          // Show the JSON payload in an alert for easy copy-paste to Postman
+          alert('Copy this JSON and paste it in Postman:\n' + JSON.stringify({
+            participantName,
+            participantEmpID,
+            judgeName,
+            judgeId,
+            totalScore: total,
+            maxScore: max,
+            percent: pct,
+            sectionScores,
+            dialInTimeTaken,
+            milkTimeTaken,
+            submissionTime: completion
+          }, null, 2));
         } catch (err) {
           // Optionally handle error (e.g., show a warning, but don't block PDF)
-          console.warn('Log failed', err);
+          
         }
 
         safeVibrate(100);
