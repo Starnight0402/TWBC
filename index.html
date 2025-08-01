@@ -472,10 +472,26 @@
               participantEmpID,
               judgeName,
               judgeId,
+              storeName,
+              storeID,
+              coffeeMachineName,
               totalScore: total,
               maxScore: max,
               percent: pct,
-              sectionScores,
+              // Static section scores
+              GroomingHygieneScore: sectionScores.GroomingHygiene,
+              EspressoDialInScore: sectionScores.EspressoDialIn,
+              EspressoDialInShot1Score: sectionScores.EspressoDialInShot1,
+              EspressoDialInShot2Score: sectionScores.EspressoDialInShot2,
+              DialInEndTimeScore: sectionScores.DialInEndTime,
+              MilkBasedBeveragesScore: sectionScores.MilkBasedBeverages,
+              MilkCup1Score: sectionScores.MilkCup1,
+              Cup1SteamingScore: sectionScores.Cup1Steaming,
+              Cup1PouringScore: sectionScores.Cup1Pouring,
+              MilkCup2Score: sectionScores.MilkCup2,
+              Cup2SteamingScore: sectionScores.Cup2Steaming,
+              Cup2PouringScore: sectionScores.Cup2Pouring,
+              EndTimeScore: sectionScores.EndTime,
               dialInTimeTaken,
               milkTimeTaken,
               submissionTime: completion
@@ -483,19 +499,7 @@
           });
 
           // Show the JSON payload in an alert for easy copy-paste to Postman
-          alert('Copy this JSON and paste it in Postman:\n' + JSON.stringify({
-            participantName,
-            participantEmpID,
-            judgeName,
-            judgeId,
-            totalScore: total,
-            maxScore: max,
-            percent: pct,
-            sectionScores,
-            dialInTimeTaken,
-            milkTimeTaken,
-            submissionTime: completion
-          }, null, 2));
+       
         } catch (err) {
           // Optionally handle error (e.g., show a warning, but don't block PDF)
           
