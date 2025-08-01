@@ -63,7 +63,7 @@
     const judgeName = getParam('judgeName') || getParam('name') || '';
     const judgeId   = getParam('judgeId') || getParam('id') || '';
     // const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx_6IAxc8u-hEZDfHq_e1vPGBRS1CPx5TlWzaArHf20KoGRnueFrlF-wVOdF1VDpf5S/exec';
-    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxJmo3dQaadVeUxi-Q4mSQZb4_ixcC3ZUuBlQd8neXsWr-Ojfr5yzouQWKVq_qt-kM15g/exec';
+    const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxsV_NA25ZqYcPgONipNfaAEf11-mbYKtE3Ad3eEMi0Kv-0ccvoKwQRGoxjE3cpgNgOgw/exec';
     const safeVibrate = pattern => { if(navigator?.vibrate) navigator.vibrate(pattern); };
     const safeLS = { get:k=>{try{return localStorage.getItem(k)}catch{return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}, clear:()=>{try{localStorage.clear()}catch{}} };
     // Checklist Data & Scoring (UPDATED)
@@ -457,18 +457,9 @@
         const dialInTimeTaken = getTimeDiff(dialInStart, dialInEnd);
         const milkTimeTaken = getTimeDiff(milkStart, milkEnd);
 
-        // --- LOGGING TO GOOGLE SCRIPT ENDPOINT --- 
+        // Logging
         const data = new URLSearchParams({
-          date: completion,
-          participantName, participantEmpID, judgeName, judgeId,
-          score: total, percentage: pct
-        });
-        try {
-          await fetch('https://formspree.io/f/xdkddwlk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              participantName,
+          participantName,
               participantEmpID,
               judgeName,
               judgeId,
@@ -495,17 +486,12 @@
               dialInTimeTaken,
               milkTimeTaken,
               submissionTime: completion
-            })
-          });
-
-          // Show the JSON payload in an alert for easy copy-paste to Postman
-       
-        } catch (err) {
-          // Optionally handle error (e.g., show a warning, but don't block PDF)
-          
-        }
-
+        });
+        try {
+          await fetch(LOG_ENDPOINT, { method: "POST", body: data });
+        } catch {}
         safeVibrate(100);
+        
         // PDF Generation
         const {jsPDF}=window.jspdf;
         const doc=new jsPDF({orientation:'portrait',unit:'mm'});
